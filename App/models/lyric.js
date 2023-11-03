@@ -1,18 +1,7 @@
 const mongoose = require("mongoose");
 const lyricSchema = new mongoose.Schema(
   {
-    name: {
-      type: String,
-      required: true,
-      trim: true,
-      lowercase: true,
-    },
-    artist: {
-      type: String,
-      required: true,
-      trim: true,
-      lowercase: true,
-    },
+    track: { type: mongoose.Schema.Types.ObjectId, ref: "Song" },
     lyric: [
       {
         start: {
@@ -29,10 +18,6 @@ const lyricSchema = new mongoose.Schema(
         },
       },
     ],
-    writer: {
-      type: mongoose.Schema.Types.ObjectId,
-      ref: "User",
-    },
     status: { type: String, default: "pending" },
   },
   { timestamps: true }

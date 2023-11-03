@@ -1,7 +1,6 @@
 const mongoose = require("mongoose");
 const bcrypt = require("bcrypt");
 const jwt = require("jsonwebtoken");
-const Lyric = require("./lyric");
 const createHttpError = require("http-errors");
 
 const userSchema = new mongoose.Schema({
@@ -17,6 +16,13 @@ const userSchema = new mongoose.Schema({
     trim: true,
     minlength: 6,
   },
+  username: {
+    type: String,
+    unique: true,
+    required: true,
+    trim: true,
+    lowercase: true,
+  },
   email: {
     type: String,
     unique: true,
@@ -24,27 +30,38 @@ const userSchema = new mongoose.Schema({
     trim: true,
     lowercase: true,
   },
-
-  score: {
-    type: Number,
-    default: 0,
-  },
-  level: {
-    type: Number,
-    default: 1,
-  },
-  roles: { type: [String], default: ["USER"] },
-  favorits: {
+  image: { type: String },
+  favorit_songs: {
     type: [mongoose.Schema.Types.ObjectId],
-    ref: "Lyric",
+    ref: "Song",
     default: [],
   },
+  role: { type: String, default: "USER" },
+  track: {
+    type: [mongoose.Schema.Types.ObjectId],
+    ref: "Song",
+  },
+  Collections: {
+    type: [mongoose.Schema.Types.ObjectId],
+    ref: "Collection",
+  },
+  description: {
+    type: String,
+    default: "Hi ,I'm new to this app",
+  },
+  listenners: { type: Number },
+  favorit_collections: {
+    type: [mongoose.Schema.Types.ObjectId],
+    ref: "Collection",
+    default: [],
+  },
+  score: { type: Number, default: 0 },
 });
-userSchema.virtual("lyrics", {
-  ref: "Lyric",
-  localField: "_id",
-  foreignField: "writer",
-});
+// userSchema.virtual("lyrics", {
+//   ref: "Lyric",
+//   localField: "_id",
+//   foreignField: "writer",
+// });
 
 userSchema.pre("save", async function (next) {
   const user = this;
@@ -52,29 +69,26 @@ userSchema.pre("save", async function (next) {
     const salt = bcrypt.genSaltSync(10);
     user.password = await bcrypt.hash(user.password, salt);
   }
-
   next();
 });
 
-userSchema.pre("remove", async function (next) {
-  const user = this;
-  const lyrics = await Lyric.find({ writer: user._id });
-  for (const lyric of lyrics) {
-    lyric.writer = undefined;
-    await lyric.save();
-  }
-  next();
-});
+// userSchema.pre("remove", async function (next) {
+//   const user = this;
+//   const lyrics = await Lyric.find({ writer: user._id });
+//   for (const lyric of lyrics) {
+//     lyric.writer = undefined;
+//     await lyric.save();
+//   }
+//   next();
+// });
 
 userSchema.methods.createAuthTocken = async function () {
   const user = this;
-
   const token = jwt.sign(
     { _id: user._id.toString() },
     process.env.JTWTOKEN,
-    { expiresIn: "2h" }
+    { expiresIn: "7d" }
   );
-
   return token;
 };
 

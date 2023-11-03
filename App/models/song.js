@@ -1,23 +1,39 @@
 const mongoose = require("mongoose");
 const songSchema = new mongoose.Schema(
   {
-    name: {
+    title: {
       type: String,
       required: true,
       trim: true,
       lowercase: true,
     },
     artist: {
-      type: String,
-      required: true,
-      trim: true,
-      lowercase: true,
+      artist_id: {
+        type: mongoose.Schema.Types.ObjectId,
+        ref: "User",
+      },
+      artist_name: {
+        type: String,
+        required: true,
+        trim: true,
+        lowercase: true,
+      },
     },
-    album: {
-      type: String,
-      trim: true,
-      lowercase: true,
-    },
+    features: [
+      {
+        artist_id: {
+          type: mongoose.Schema.Types.ObjectId,
+          required: true,
+          ref: "User",
+        },
+        artist_name: {
+          type: String,
+          required: true,
+          trim: true,
+          lowercase: true,
+        },
+      },
+    ],
     address: {
       type: String,
       required: true,
@@ -26,16 +42,8 @@ const songSchema = new mongoose.Schema(
       type: mongoose.Schema.Types.ObjectId,
       ref: "Lyric",
     },
-    requests: {
-      type: [mongoose.Schema.Types.ObjectId],
-      ref: "Lyric",
-    },
 
-    rejected: {
-      type: [mongoose.Schema.Types.ObjectId],
-      ref: "Lyric",
-    },
-
+    image: { type: String },
     status: { type: String, default: "pending" },
   },
   { timestamps: true }

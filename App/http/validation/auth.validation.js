@@ -1,6 +1,19 @@
 const createHttpError = require("http-errors");
 const Joi = require("joi");
 
+const passwordObject = Joi.string()
+  .required()
+  .trim()
+  .min(8)
+  .max(16)
+  .error(
+    createHttpError.BadRequest("Password must be in range of 8-16")
+  );
+const emailObject = Joi.string()
+  .required()
+  .trim()
+  .email()
+  .error(createHttpError.BadRequest("please enter a valid email"));
 const signupValidator = Joi.object({
   name: Joi.string()
     .required()
@@ -11,19 +24,8 @@ const signupValidator = Joi.object({
         "Name must be greater than 3 charecter"
       )
     ),
-  password: Joi.string()
-    .required()
-    .trim()
-    .min(8)
-    .max(16)
-    .error(
-      createHttpError.BadRequest("Password must be in range of 8-16")
-    ),
-  email: Joi.string()
-    .required()
-    .trim()
-    .email()
-    .error(createHttpError.BadRequest("please enter a valid email")),
+  password: passwordObject,
+  email: emailObject,
 });
 const loginValidator = Joi.object({
   password: Joi.string()
@@ -34,21 +36,10 @@ const loginValidator = Joi.object({
     .error(
       createHttpError.BadRequest("Password must be in range of 8-16")
     ),
-  email: Joi.string()
-    .required()
-    .trim()
-    .email()
-    .error(createHttpError.BadRequest("please enter a valid email")),
+  email: emailObject,
 });
 const resetPassValidator = Joi.object({
-  currentpass: Joi.string()
-    .required()
-    .trim()
-    .min(8)
-    .max(16)
-    .error(
-      createHttpError.BadRequest("Password must be in range of 8-16")
-    ),
+  currentpass: passwordObject,
   newpass: Joi.string()
     .required()
     .trim()

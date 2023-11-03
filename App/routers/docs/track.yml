@@ -1,0 +1,65 @@
+tags:
+  - name: tracks
+    description: routes for working with audio files
+
+components:
+  schemas:
+    uploadtracks:
+      type: object
+      required:
+        - title
+        - artist
+        - track
+      properties:
+        title:
+          type: string
+          description: title of the song
+        artist:
+          type: string
+          description: artist object id
+        track:
+          type: file
+          description: the track url
+        features:
+          type: array
+          items:
+            type: string
+          description: artist ids that appear in this track
+
+/track/upload:
+  post:
+    tags: [tracks]
+    summary: upload a song by a user
+    requestBody:
+      required: true
+      content:
+        multipart/form-data:
+          schema:
+            $ref: "#/components/schemas/uploadtracks"
+    responses:
+      200:
+        description: password reset successfully
+      401:
+        description: unauthorized
+      400:
+        description: bad request
+      500:
+        description: internal server error
+
+/track/stream/{id}:
+  get:
+    tags:
+      - tracks
+    summary: stream a song
+    parameters:
+      - name: id
+        in: path
+        description: ID of the track
+        required: true
+        schema:
+          type: string
+    responses:
+      200:
+        description: ok
+      404:
+        description: not found

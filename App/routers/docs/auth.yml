@@ -1,0 +1,105 @@
+tags:
+  - name: Auth
+    description: routes for authentication of a user
+
+components:
+  schemas:
+    signUp:
+      type: object
+      required:
+        - name
+        - email
+        - password
+      properties:
+        name:
+          type: string
+          description: full name of user
+        email:
+          type: string
+          description: email of user
+        password:
+          type: string
+          description: password of user
+    login:
+      type: object
+      required:
+        - email
+        - password
+      properties:
+        email:
+          type: string
+          description: email of user
+          example: mohammadsoltanian10@gmail.com
+        password:
+          type: string
+          description: password of user
+          example: 1180098366
+    reset:
+      type: object
+      required:
+        - currentpass
+        - newpass
+        - repeatnewpass
+      properties:
+        currentpass:
+          type: string
+          description: current Password
+        newpass:
+          type: string
+          description: new Password
+        repeatnewpass:
+          type: string
+          description: repeat new password
+
+/auth/signup:
+  post:
+    tags: [Auth]
+    summary: create account
+    requestBody:
+      required: true
+      content:
+        application/x-www-form-urlencoded:
+          schema:
+            $ref: "#/components/schemas/signUp"
+
+    responses:
+      201:
+        description: created
+      400:
+        description: bad request
+      500:
+        description: InternalServerError
+
+/auth/login:
+  post:
+    tags: [Auth]
+    summary: login to an account
+    requestBody:
+      required: true
+      content:
+        application/x-www-form-urlencoded:
+          schema:
+            $ref: "#/components/schemas/login"
+    responses:
+      200:
+        description: authenticated successfully
+      401:
+        description: wrong credentials
+
+/auth/resetpass:
+  post:
+    tags: [Auth]
+    summary: reset your account password
+    requestBody:
+      required: true
+      content:
+        application/x-www-form-urlencoded:
+          schema:
+            $ref: "#/components/schemas/reset"
+    responses:
+      200:
+        description: password reseted successfully
+      401:
+        description: unauthorized
+      500:
+        description: internalservererror

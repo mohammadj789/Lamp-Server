@@ -3,6 +3,7 @@ class Application {
   #app = this.#express();
   #PORT;
   constructor(PORT, DB_URL) {
+
     this.#PORT = PORT;
     this.configApplication();
     this.configServer();
@@ -18,7 +19,9 @@ class Application {
     this.#app.use(this.#express.json());
     this.#app.use(this.#express.urlencoded({ extended: true }));
     this.#app.use(
-      this.#express.static(path.join(__dirname, "..", "public"))
+      this.#express.static(
+        path.join(__dirname, "..", "static", "public")
+      )
     );
     this.#app.use(morgan("dev"));
     this.#app.use(
@@ -55,7 +58,7 @@ class Application {
               },
             ],
           },
-          apis: ["./App/routers/*.js"],
+          apis: ["./App/routers/docs/*.yml"],
         }),
         { explorer: true }
       )

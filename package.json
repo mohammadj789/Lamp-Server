@@ -4,7 +4,7 @@
   "description": "a music player with sync lyric",
   "main": "index.js",
   "scripts": {
-    "dev": "nodemon index.js",
+    "dev": "nodemon --ext js,json,yml index.js",
     "start": "node index.js",
     "MongoDB": "C:/mongoDB/Database/bin/mongod.exe --dbpath=C:/mongoDB/Data"
   },
