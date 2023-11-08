@@ -1,0 +1,166 @@
+tags:
+  - name: Colloction
+    description: routes for working with audio files
+
+components:
+  schemas:
+    addtocollection:
+      type: object
+      required:
+        - trackID
+        - playlistID
+      properties:
+        trackID:
+          type: string
+          description: id of the song
+        playlistID:
+          type: string
+          description: id of playlist
+
+/collection/updateTumbnail/{id}:
+  post:
+    tags:
+      - Colloction
+    summary: Update a song's thumbnail
+
+    parameters:
+      - name: id
+        in: path
+        description: ID of the collection
+        required: true
+        schema:
+          type: string
+    requestBody:
+      content:
+        multipart/form-data:
+          schema:
+            type: object
+            properties:
+              image:
+                type: file
+
+    responses:
+      200:
+        description: OK
+      404:
+        description: Not found
+/collection/delete/{id}:
+  delete:
+    tags:
+      - Colloction
+    summary: delete a colloction with songs
+
+    parameters:
+      - name: id
+        in: path
+        description: ID of the collection
+        required: true
+        schema:
+          type: string
+
+    responses:
+      200:
+        description: OK
+      404:
+        description: Not found
+/collection/create/{type}:
+  post:
+    tags:
+      - Colloction
+    summary: delete a colloction with songs
+
+    parameters:
+      - name: type
+        in: path
+        description: type of the collection
+        required: true
+        schema:
+          type: string
+
+    requestBody:
+      content:
+        application/x-www-form-urlencoded:
+          schema:
+            type: object
+            required:
+              - title
+            properties:
+              title:
+                type: string
+                description: title of the collection
+              artist:
+                type: string
+                description: artist id of the collection in case you are admin
+
+    responses:
+      200:
+        description: OK
+      404:
+        description: Not found
+
+/collection/upload/{id}:
+  post:
+    tags:
+      - Colloction
+    summary: Upload a track to a collection
+
+    parameters:
+      - name: id
+        in: path
+        description: id of the collection
+        required: true
+        schema:
+          type: string
+    requestBody:
+      required: true
+      content:
+        multipart/form-data:
+          schema:
+            $ref: "#/components/schemas/uploadtracks"
+    responses:
+      200:
+        description: password reset successfully
+      401:
+        description: unauthorized
+      400:
+        description: bad request
+      500:
+        description: internal server error
+/collection/add/:
+  post:
+    tags: [Colloction]
+    summary: upload a single track by a user
+    requestBody:
+      required: true
+      content:
+        application/x-www-form-urlencoded:
+          schema:
+            $ref: "#/components/schemas/addtocollection"
+    responses:
+      200:
+        description: added successfully
+      401:
+        description: unauthorized
+      400:
+        description: bad request
+      500:
+        description: internal server error
+/collection/remove-track/:
+  delete:
+    tags: [Colloction]
+    summary: remove a single track by a user from playulsit
+    requestBody:
+      required: true
+      content:
+        application/x-www-form-urlencoded:
+          schema:
+            $ref: "#/components/schemas/addtocollection"
+    responses:
+      200:
+        description: removed successfully
+      401:
+        description: unauthorized
+      400:
+        description: bad request
+      500:
+        description: internal server error

@@ -4,14 +4,17 @@ const { Controller } = require("./Controller");
 const createHttpError = require("http-errors");
 const { removeErrorFile } = require("../../utils/functions");
 const os = require("os");
-const {
-  uploadTrackValidator,
-} = require("../validation/track.validator");
+
 const { UserModel } = require("../../models/user");
 const { features } = require("process");
 const Song = require("../../models/song");
 const { default: mongoose } = require("mongoose");
 const { CheckIDValidator } = require("../validation/index.validator");
+const Collection = require("../../models/collection");
+// const {
+//   uploadTrackValidator,
+// } = require("../validation/track.validator");
+
 class TrackController extends Controller {
   uplaodTrack = async (req, res, next) => {
     try {
@@ -22,7 +25,9 @@ class TrackController extends Controller {
         throw createHttpError.Unauthorized(
           "you are not allowed to upload a song"
         );
-
+      if (user.role === "ADMIN" && !req.body.artist) {
+        throw createHttpError.BadRequest("you shold set a artist");
+      }
       //determin artist
       const artist =
         user.role === "ADMIN"
@@ -35,14 +40,18 @@ class TrackController extends Controller {
 
       //validate body
       const file = req.file;
-      await uploadTrackValidator.validateAsync(req.body);
+      console.log(file);
+
+      // await uploadTrackValidator.validateAsync(req.body);
       if (!file) {
         throw createHttpError.BadRequest("please upload a file");
       }
 
+      console.log(req.filepathaddress);
+
       //generate path
       const address = path
-        .join(req.filepathaddress, req.file.filename)
+        .join(req.filepathaddress[0], req.file.filename)
         .replace(/(\\)/gim, "/");
       console.log(address);
 
@@ -82,8 +91,34 @@ class TrackController extends Controller {
         address,
       });
       if (!track) throw createHttpError.InternalServerError();
-
-      res.status(201).json({
+      //create colloction for track
+      const colloction = await Collection.create({
+        title: req.body.title,
+        owner: {
+          owner_id: artist._id,
+          owner_name: artist.name,
+        },
+        tracks: [track._id],
+        type: "Single",
+      });
+      //remove song on colloctionerror
+      if (!colloction) {
+        await Song.findByIdAndRemove(track._id);
+        throw createHttpError.InternalServerError();
+      }
+      //update user
+      const userUpdateresult = await UserModel.findByIdAndUpdate(
+        artist._id,
+        { $push: { tracks: track._id, Collections: colloction._id } }
+      );
+      //remove song and colloction on cupdate error
+      if (!userUpdateresult) {
+        await Song.findByIdAndRemove(track._id);
+        await colloction.findByIdAndRemove(colloction._id);
+        throw createHttpError.InternalServerError();
+      }
+      //done
+      return res.status(201).json({
         status: 201,
         message: "track uploaded successfully",
         track,
@@ -93,6 +128,7 @@ class TrackController extends Controller {
       next(error);
     }
   };
+
   streamTrack = async (req, res, next) => {
     try {
       //validate id and song
@@ -144,6 +180,59 @@ class TrackController extends Controller {
           )
         );
       } else next(error);
+    }
+  };
+  addTrackToFavorits = async (req, res, next) => {
+    try {
+      const user = req.user;
+      await CheckIDValidator.validateAsync({
+        id: req.params.trackID,
+      });
+      console.log(user);
+
+      const track = await Song.findById(req.params.trackID);
+      if (!track)
+        throw createHttpError.NotFound("track is not a valid one");
+
+      user.favorit_songs.push(track._id);
+      const saved = await user.save();
+      if (!saved) {
+        throw createHttpError.InternalServerError();
+      }
+      return res.status(200).json({
+        status: 200,
+        message: "track Added successfully",
+        playlist: saved.favorit_songs,
+      });
+    } catch (error) {
+      next(error);
+    }
+  };
+  removeTrackFromFavorits = async (req, res, next) => {
+    try {
+      const user = req.user;
+      await CheckIDValidator.validateAsync({
+        id: req.params.trackID,
+      });
+
+      const index = user.favorit_songs.indexOf(req.params.trackID);
+      if (index > -1) {
+        user.favorit_songs.splice(index, 1);
+        const saved = await user.save();
+        if (!saved) {
+          throw createHttpError.InternalServerError();
+        }
+        return res.status(200).json({
+          status: 200,
+          message: "track reemoved successfully",
+          playlist: saved,
+        });
+      } else
+        throw createHttpError.NotFound(
+          "theres no such track in your playlist"
+        );
+    } catch (error) {
+      next(error);
     }
   };
 }

@@ -37,7 +37,7 @@ const userSchema = new mongoose.Schema({
     default: [],
   },
   role: { type: String, default: "USER" },
-  track: {
+  tracks: {
     type: [mongoose.Schema.Types.ObjectId],
     ref: "Song",
   },

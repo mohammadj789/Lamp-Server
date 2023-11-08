@@ -11,7 +11,6 @@ const ErrorHandler = (err, req, res, next) => {
     err.status = 400;
     err.message = `this ${key} already exists`;
   }
-
   const status =
     err.status || err.statusCode || defaultServerError.status;
   const message =

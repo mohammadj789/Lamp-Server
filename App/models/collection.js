@@ -7,7 +7,7 @@ const collectionSchema = new mongoose.Schema(
       trim: true,
       lowercase: true,
     },
-    img: { type: String },
+    image: { type: String },
     owner: {
       owner_id: {
         type: mongoose.Schema.Types.ObjectId,
@@ -22,6 +22,7 @@ const collectionSchema = new mongoose.Schema(
     },
     tracks: [
       {
+        unique: true,
         type: mongoose.Schema.Types.ObjectId,
         ref: "Song",
       },

@@ -3,6 +3,7 @@ const { Router } = require("express");
 const { AuthRoutes } = require("./auth.routes");
 
 const { TrackRoutes } = require("./track.routes");
+const { CollectionRoutes } = require("./colloction.routes");
 const router = Router();
 
 router.get("/", (req, res) => {
@@ -10,4 +11,5 @@ router.get("/", (req, res) => {
 });
 router.use("/Auth", AuthRoutes);
 router.use("/Track", TrackRoutes);
+router.use("/collection", CollectionRoutes);
 module.exports = { AllRoutes: router };
