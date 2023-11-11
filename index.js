@@ -1,5 +1,5 @@
 require("dotenv").config();
 const { Application } = require("./App/app");
+console.log(process.env);
 
-const DB_URL = "mongodb://127.0.0.1:27017/Lamp";
-new Application(4000, DB_URL);
+new Application(process.env.PORT, process.env.DB_URL);
