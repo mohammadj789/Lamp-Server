@@ -1,0 +1,48 @@
+tags:
+  - name: Lyric
+    description: routes for working with Lyric for a song
+
+components:
+  schemas:
+    LyricLine:
+      type: object
+      properties:
+        start:
+          type: string
+          pattern: '^(\d{2}):(\d{2})$'
+        content:
+          type: string
+      required:
+        - start
+        - content
+
+    newlyric:
+      type: object
+      properties:
+        track:
+          type: string
+        lyric:
+          type: array
+          items:
+            $ref: "#/components/schemas/LyricLine"
+      required:
+        - lyric
+
+/lyric/new:
+  post:
+    tags: [Lyric]
+    summary: create a new lyric
+    requestBody:
+      required: true
+      content:
+        application/x-www-form-urlencoded:
+          schema:
+            $ref: "#/components/schemas/newlyric"
+
+    responses:
+      201:
+        description: created
+      400:
+        description: bad request
+      500:
+        description: InternalServerError
