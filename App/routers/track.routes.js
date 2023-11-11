@@ -7,6 +7,7 @@ const { checkAuth } = require("../http/middleware/checkAuth");
 const { stringToArray } = require("../http/middleware/stringToArray");
 
 const { multerUpload } = require("../http/middleware/Multer");
+const { OptioanalAuth } = require("../http/middleware/OptioanalAuth");
 
 const router = Router();
 //upload a track with colloction
@@ -20,15 +21,12 @@ router.post(
   TrackController.uplaodTrack
 );
 router.post(
-  "/favorite/add/:trackID",
+  "/favorite/:trackID",
   checkAuth,
-  TrackController.addTrackToFavorits
+  TrackController.changeFavorits
 );
-router.delete(
-  "/favorite/remove/:trackID",
-  checkAuth,
-  TrackController.removeTrackFromFavorits
-);
+router.get("/favorite", checkAuth, TrackController.getFavorits);
+router.get("/me", checkAuth, TrackController.getTracks);
 
-router.get("/stream/:id", TrackController.streamTrack);
+router.get("/stream/:id", OptioanalAuth, TrackController.streamTrack);
 module.exports = { TrackRoutes: router };

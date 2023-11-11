@@ -131,7 +131,9 @@ class TrackController extends Controller {
 
   streamTrack = async (req, res, next) => {
     try {
+      const user = req.user;
       //validate id and song
+
       await CheckIDValidator.validateAsync(req.params);
       const id = req.params.id;
       const song = await Song.findById(id);
@@ -143,7 +145,29 @@ class TrackController extends Controller {
         "..",
         song.address
       );
-      //stream song
+      if (user) {
+        const isStreamed = user.streams.findIndex((item) => {
+          return item?.TrackId.toString() === song._id.toString();
+        });
+        if (isStreamed === -1) {
+          song.stream += 1;
+          user.streams.push({ TrackId: song._id });
+        } else if (
+          isStreamed > -1 &&
+          Date.now() -
+            new Date(user.streams[isStreamed]?.addedAt).getTime() >
+            3 * 60 * 1000
+        ) {
+          song.stream += 1;
+
+          user.streams[isStreamed] = {
+            TrackId: song._id,
+            addedAt: new Date(),
+          };
+        }
+        user.save();
+        song.save();
+      }
       const stat = fs.statSync(filePath);
       const fileSize = stat.size;
       const range = req.headers.range;
@@ -182,55 +206,67 @@ class TrackController extends Controller {
       } else next(error);
     }
   };
-  addTrackToFavorits = async (req, res, next) => {
+  changeFavorits = async (req, res, next) => {
     try {
       const user = req.user;
       await CheckIDValidator.validateAsync({
         id: req.params.trackID,
       });
-      console.log(user);
+      const index = user.favorit_songs.indexOf(req.params.trackID);
+      if (index > -1) {
+        user.favorit_songs.splice(index, 1);
+      } else {
+        const track = await Song.findById(req.params.trackID);
+        if (!track)
+          throw createHttpError.NotFound("track is not a valid one");
 
-      const track = await Song.findById(req.params.trackID);
-      if (!track)
-        throw createHttpError.NotFound("track is not a valid one");
-
-      user.favorit_songs.push(track._id);
+        user.favorit_songs.push(track._id);
+      }
       const saved = await user.save();
       if (!saved) {
         throw createHttpError.InternalServerError();
       }
       return res.status(200).json({
         status: 200,
-        message: "track Added successfully",
-        playlist: saved.favorit_songs,
+        message: `track ${
+          index > -1 ? "removed" : "added"
+        } successfully`,
+        favorits: saved.favorit_songs,
       });
     } catch (error) {
       next(error);
     }
   };
-  removeTrackFromFavorits = async (req, res, next) => {
+  getFavorits = async (req, res, next) => {
     try {
       const user = req.user;
-      await CheckIDValidator.validateAsync({
-        id: req.params.trackID,
-      });
+      console.log(user.favorit_songs);
 
-      const index = user.favorit_songs.indexOf(req.params.trackID);
-      if (index > -1) {
-        user.favorit_songs.splice(index, 1);
-        const saved = await user.save();
-        if (!saved) {
-          throw createHttpError.InternalServerError();
-        }
-        return res.status(200).json({
-          status: 200,
-          message: "track reemoved successfully",
-          playlist: saved,
-        });
-      } else
-        throw createHttpError.NotFound(
-          "theres no such track in your playlist"
-        );
+      const PopulatedUser = await user.populate({
+        path: "favorit_songs",
+        select: "-address -status", // Add the fields you want to select
+      });
+      return res.status(200).json({
+        status: 200,
+        favorits: PopulatedUser.favorit_songs,
+      });
+    } catch (error) {
+      next(error);
+    }
+  };
+  getTracks = async (req, res, next) => {
+    try {
+      const user = req.user;
+      if (user.role !== "ARTIST")
+        throw createHttpError.Unauthorized();
+      const PopulatedUser = await user.populate({
+        path: "tracks",
+        select: "-address -status", // Add the fields you want to select
+      });
+      return res.status(200).json({
+        status: 200,
+        tracks: PopulatedUser.tracks,
+      });
     } catch (error) {
       next(error);
     }

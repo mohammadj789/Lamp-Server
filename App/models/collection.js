@@ -22,7 +22,7 @@ const collectionSchema = new mongoose.Schema(
     },
     tracks: [
       {
-        unique: true,
+        // unique: true,
         type: mongoose.Schema.Types.ObjectId,
         ref: "Song",
       },

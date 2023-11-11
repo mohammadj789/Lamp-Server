@@ -29,7 +29,10 @@ class CollectionController extends Controller {
       }
       //generate path
       const address = path
-        .join(req.filepathaddress[0], req.file.filename)
+        .join(
+          req.filepathaddress?.[0]?.replace("static\\public", ""),
+          req.file.filename
+        )
         .replace(/(\\)/gim, "/");
 
       //updtae colloction image
@@ -102,7 +105,10 @@ class CollectionController extends Controller {
         if (updateResult.deletedCount === 0)
           throw createHttpError.InternalServerError();
       }
-
+      user.tracks = user.tracks.filter(
+        (track) => !collection.tracks.includes(track)
+      );
+      user.save();
       //done
       return res.status(200).json({
         status: 200,
@@ -150,9 +156,8 @@ class CollectionController extends Controller {
       if (!colloction) {
         throw createHttpError.InternalServerError();
       }
-      const userUpdate = await artist.collections.push(
-        colloction._id
-      );
+      artist.Collections.push(colloction._id);
+      const userUpdate = artist.save();
       if (!userUpdate) {
         await Collection.findByIdAndRemove(colloction._id);
         throw createHttpError.InternalServerError();
@@ -347,6 +352,82 @@ class CollectionController extends Controller {
         throw createHttpError.NotFound(
           "theres no such track in your playlist"
         );
+    } catch (error) {
+      next(error);
+    }
+  };
+  changeFavorits = async (req, res, next) => {
+    try {
+      const user = req.user;
+      await CheckIDValidator.validateAsync({
+        id: req.params.collectionID,
+      });
+      const index = user.favorit_collections.indexOf(
+        req.params.collectionID
+      );
+      if (index > -1) {
+        user.favorit_collections.splice(index, 1);
+      } else {
+        const collectioan = await Collection.findById(
+          req.params.collectionID
+        );
+        if (!collectioan)
+          throw createHttpError.NotFound(
+            "collection is not a valid one"
+          );
+
+        user.favorit_collections.push(collectioan._id);
+      }
+      const saved = await user.save();
+      if (!saved) {
+        throw createHttpError.InternalServerError();
+      }
+      return res.status(200).json({
+        status: 200,
+        message: `track ${
+          index > -1 ? "removed" : "added"
+        } successfully`,
+        favorits: saved.favorit_collections,
+      });
+    } catch (error) {
+      next(error);
+    }
+  };
+  getCollections = async (req, res, next) => {
+    try {
+      const user = req.user;
+
+      const PopulatedUser = await user.populate({
+        path: "favorit_collections Collections",
+        select: " -status", // Add the fields you want to select
+      });
+      return res.status(200).json({
+        status: 200,
+        collectioans: {
+          wished: PopulatedUser.favorit_collections,
+          me: PopulatedUser.Collections,
+        },
+      });
+    } catch (error) {
+      next(error);
+    }
+  };
+  getCollectionById = async (req, res, next) => {
+    try {
+      await CheckIDValidator.validateAsync({
+        id: req.params.collectionID,
+      });
+      const PopulatedCollection = await Collection.findById(
+        req.params.collectionID
+      ).populate({
+        path: "tracks",
+        select: "-address -status", // Add the fields you want to select
+      });
+      if (PopulatedCollection) throw createHttpError.NotFound();
+      return res.status(200).json({
+        status: 200,
+        collection: PopulatedCollection,
+      });
     } catch (error) {
       next(error);
     }

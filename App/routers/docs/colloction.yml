@@ -164,3 +164,57 @@ components:
         description: bad request
       500:
         description: internal server error
+/collection/favorite/{collectionID}:
+  post:
+    tags: [Colloction]
+    summary: add a Colloction to favorits
+    parameters:
+      - name: collectionID
+        in: path
+        description: ID of the Colloction
+        required: true
+        schema:
+          type: string
+    responses:
+      200:
+        description: done successfully
+      401:
+        description: unauthorized
+      400:
+        description: bad request
+      500:
+        description: internal server error
+/collection:
+  get:
+    tags: [Colloction]
+    summary: get all Colloction
+    responses:
+      200:
+        description: success
+      401:
+        description: unauthorized
+      400:
+        description: bad request
+      500:
+        description: internal server error
+
+/collection/{collectionID}:
+  get:
+    tags: [Colloction]
+    summary: get a collection by id
+    parameters:
+      - name: collectionID
+        in: path
+        description: ID of the Colloction
+        required: true
+        schema:
+          type: string
+    responses:
+      200:
+        description: done successfully
+      401:
+        description: unauthorized
+      400:
+        description: bad request
+      500:
+        description: internal server error

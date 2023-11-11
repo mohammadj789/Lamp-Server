@@ -10,6 +10,7 @@ components:
         - name
         - email
         - password
+        - username
       properties:
         name:
           type: string
@@ -20,6 +21,9 @@ components:
         password:
           type: string
           description: password of user
+        username:
+          type: string
+          description: username of user
     login:
       type: object
       required:

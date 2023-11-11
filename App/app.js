@@ -3,7 +3,6 @@ class Application {
   #app = this.#express();
   #PORT;
   constructor(PORT, DB_URL) {
-
     this.#PORT = PORT;
     this.configApplication();
     this.configServer();
@@ -82,7 +81,7 @@ class Application {
       console.log(
         `Server is running on port ${this.#PORT}. http://localhost:${
           this.#PORT
-        }`
+        }/api-doc`
       )
     );
   }

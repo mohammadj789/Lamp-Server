@@ -53,4 +53,12 @@ router.delete(
   checkAuth,
   CollectionController.removeTrackFromPlaylist
 );
+
+router.post(
+  "/favorite/:collectionID",
+  checkAuth,
+  CollectionController.changeFavorits
+);
+router.get("/", checkAuth, CollectionController.getCollections);
+router.get("/:collectionID", CollectionController.getCollectionById);
 module.exports = { CollectionRoutes: router };

@@ -19,6 +19,18 @@ const lyricSchema = new mongoose.Schema(
       },
     ],
     status: { type: String, default: "pending" },
+    writer: {
+      writer_id: {
+        type: mongoose.Schema.Types.ObjectId,
+        ref: "User",
+      },
+      writer_name: {
+        type: String,
+        required: true,
+        trim: true,
+        lowercase: true,
+      },
+    },
   },
   { timestamps: true }
 );

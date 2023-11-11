@@ -13,8 +13,13 @@ class AuthController extends Controller {
     try {
       await signupValidator.validateAsync(req.body);
 
-      const { name, email, password } = req.body;
-      const user = await UserModel.create({ name, email, password });
+      const { name, email, password, username } = req.body;
+      const user = await UserModel.create({
+        name,
+        email,
+        password,
+        username,
+      });
       if (!user)
         throw createHttpError.InternalServerError(
           "somthing went wrong"

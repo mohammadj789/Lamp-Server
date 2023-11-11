@@ -45,9 +45,11 @@ const songSchema = new mongoose.Schema(
 
     image: { type: String },
     status: { type: String, default: "pending" },
+    stream: { type: Number, default: 0 },
   },
   { timestamps: true }
 );
+
 const Song = mongoose.model("Song", songSchema);
 
 module.exports = Song;

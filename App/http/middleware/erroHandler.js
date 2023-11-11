@@ -7,6 +7,8 @@ const ErrorHandler = (err, req, res, next) => {
   const defaultServerError = createHttpError.InternalServerError();
 
   if (err.name === "MongoServerError" && err.code === 11000) {
+    console.log(err);
+
     const key = Object.keys(err?.keyPattern)[0];
     err.status = 400;
     err.message = `this ${key} already exists`;

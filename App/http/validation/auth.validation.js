@@ -26,6 +26,15 @@ const signupValidator = Joi.object({
     ),
   password: passwordObject,
   email: emailObject,
+  username: Joi.string()
+    .required()
+    .trim()
+    .min(5)
+    .error(
+      createHttpError.BadRequest(
+        "username must be greater than 3 charecter"
+      )
+    ),
 });
 const loginValidator = Joi.object({
   password: Joi.string()
