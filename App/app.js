@@ -40,7 +40,14 @@ class Application {
               },
             },
             openapi: "3.0.0",
-            servers: [{ url: `http://localhost:${this.#PORT}` }],
+            servers: [
+              {
+                url:
+                  process.env.NODE_ENV === "production"
+                    ? "https://lamp-server.iran.liara.run"
+                    : `http://localhost:${this.#PORT}`,
+              },
+            ],
 
             components: {
               securitySchemes: {
