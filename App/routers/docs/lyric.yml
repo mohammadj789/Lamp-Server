@@ -35,7 +35,7 @@ components:
     requestBody:
       required: true
       content:
-        application/x-www-form-urlencoded:
+        application/json:
           schema:
             $ref: "#/components/schemas/newlyric"
 
@@ -46,3 +46,71 @@ components:
         description: bad request
       500:
         description: InternalServerError
+
+/lyric/{trackID}/all:
+  get:
+    tags: [Lyric]
+    summary: visit all lyrics asign to a track
+    parameters:
+      - name: trackID
+        in: path
+        description: ID of the song
+        required: true
+        schema:
+          type: string
+      - name: type
+        in: query
+        description: the type to get
+        schema:
+          type: string
+          enum: [pending, rejected, accepted]
+    responses:
+      200:
+        description: successfull
+      401:
+        description: unauthorized
+      500:
+        description: internal server error
+/lyric/status/{lyricID}:
+  post:
+    tags: [Lyric]
+    summary: change status of a lyric
+    parameters:
+      - name: lyricID
+        in: path
+        description: ID of the lyric
+        required: true
+        schema:
+          type: string
+      - name: type
+        in: query
+        description: the type to get
+        schema:
+          type: string
+          enum: [pending, rejected, accepted]
+    responses:
+      200:
+        description: successfull
+      401:
+        description: unauthorized
+      500:
+        description: internal server error
+/lyric/{lyricID}:
+  get:
+    tags: [Lyric]
+    summary: get one lyric
+    parameters:
+      - name: lyricID
+        in: path
+        description: ID of the lyric
+        required: true
+        schema:
+          type: string
+
+    responses:
+      200:
+        description: successfull
+      401:
+        description: unauthorized
+      500:
+        description: internal server error

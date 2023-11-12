@@ -256,16 +256,23 @@ class TrackController extends Controller {
   };
   getTracks = async (req, res, next) => {
     try {
-      const user = req.user;
+      const ArtistId = req.params.id;
+      await CheckIDValidator.validateAsync({
+        id: ArtistId,
+      });
+      const user = await UserModel.findById(ArtistId);
       if (user.role !== "ARTIST")
         throw createHttpError.Unauthorized();
       const PopulatedUser = await user.populate({
         path: "tracks",
-        select: "-address -status", // Add the fields you want to select
+        select: "-address -status -artist", // Add the fields you want to select
       });
       return res.status(200).json({
         status: 200,
-        tracks: PopulatedUser.tracks,
+        tracks: {
+          artist: { id: user._id, name: user.name },
+          tracks: PopulatedUser.tracks,
+        },
       });
     } catch (error) {
       next(error);

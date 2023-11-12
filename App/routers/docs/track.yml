@@ -87,10 +87,17 @@ components:
       500:
         description: internal server error
 
-/track/me:
+/track/{id}:
   get:
     tags: [tracks]
     summary: get all artist Colloction
+    parameters:
+      - name: id
+        in: path
+        description: ID of the artist
+        required: true
+        schema:
+          type: string
     responses:
       200:
         description: success

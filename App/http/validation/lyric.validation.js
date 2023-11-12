@@ -14,4 +14,10 @@ const songSchema = Joi.object({
   }),
   lyric: Joi.array().items(lyricSchema).required(),
 });
-module.exports = { songSchema };
+const lyricStatusValidator = Joi.object({
+  type: Joi.string()
+    .valid("pending", "rejected", "accepted")
+    .required(),
+});
+
+module.exports = { songSchema, lyricStatusValidator };
