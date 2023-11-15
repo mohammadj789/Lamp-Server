@@ -18,6 +18,21 @@ const uploadTrackValidator = Joi.object({
         "string.pattern.base": "please enter valid Id for artist",
       })
     ),
+  genre: Joi.string()
+    .valid(
+      "Blues",
+      "Country",
+      "Electronic",
+      "Folk",
+      "HipHop",
+      "Jazz",
+      "Pop",
+      "R&B",
+      "Rock",
+      "Metal",
+      "Punk"
+    )
+    .required(),
 });
 
 module.exports = {

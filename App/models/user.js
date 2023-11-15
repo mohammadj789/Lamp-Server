@@ -71,6 +71,7 @@ const userSchema = new mongoose.Schema(
             type: Date,
             default: Date.now,
           },
+          count: { type: Number, default: 1 },
         },
       ],
       default: [],

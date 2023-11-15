@@ -7,6 +7,10 @@ const songSchema = new mongoose.Schema(
       trim: true,
       lowercase: true,
     },
+    genre: {
+      type: String,
+      required: true,
+    },
     artist: {
       artist_id: {
         type: mongoose.Schema.Types.ObjectId,

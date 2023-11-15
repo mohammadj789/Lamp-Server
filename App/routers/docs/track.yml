@@ -9,6 +9,7 @@ components:
       required:
         - title
         - track
+        - genre
       properties:
         title:
           type: string
@@ -19,9 +20,22 @@ components:
         track:
           type: file
           description: the track url
-        # thumbnail:
-        #   type: file
-        #   description: the track url
+        genre:
+          type: string
+          description: Genre of the track
+          enum:
+            - Blues
+            - Country
+            - Electronic
+            - Folk
+            - HipHop
+            - Jazz
+            - Pop
+            - R&B
+            - Rock
+            - Metal
+            - Punk
+
         features:
           type: array
           items:

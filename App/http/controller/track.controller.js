@@ -83,6 +83,7 @@ class TrackController extends Controller {
       //create song
       const track = await Song.create({
         title: req.body.title,
+        genre: req.body.genre,
         artist: {
           artist_id: artist._id,
           artist_name: artist.name,
@@ -151,7 +152,7 @@ class TrackController extends Controller {
         });
         if (isStreamed === -1) {
           song.stream += 1;
-          user.streams.push({ TrackId: song._id });
+          user.streams.push({ TrackId: song._id, count: 1 });
         } else if (
           isStreamed > -1 &&
           Date.now() -
@@ -163,6 +164,7 @@ class TrackController extends Controller {
           user.streams[isStreamed] = {
             TrackId: song._id,
             addedAt: new Date(),
+            count: user.streams[isStreamed].count + 1,
           };
         }
         user.save();

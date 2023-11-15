@@ -233,6 +233,7 @@ class CollectionController extends Controller {
 
       //create song
       const track = await Song.create({
+        genre: req.body.genre,
         title: req.body.title,
         artist: {
           artist_id: artist._id,
@@ -417,13 +418,16 @@ class CollectionController extends Controller {
       await CheckIDValidator.validateAsync({
         id: req.params.collectionID,
       });
+      console.log(req.params.collectionID);
+
       const PopulatedCollection = await Collection.findById(
         req.params.collectionID
       ).populate({
         path: "tracks",
         select: "-address -status", // Add the fields you want to select
       });
-      if (PopulatedCollection) throw createHttpError.NotFound();
+
+      if (!PopulatedCollection) throw createHttpError.NotFound();
       return res.status(200).json({
         status: 200,
         collection: PopulatedCollection,

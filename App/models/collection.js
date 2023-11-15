@@ -7,6 +7,7 @@ const collectionSchema = new mongoose.Schema(
       trim: true,
       lowercase: true,
     },
+
     image: { type: String },
     owner: {
       owner_id: {
