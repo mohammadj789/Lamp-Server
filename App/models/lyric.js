@@ -5,10 +5,8 @@ const lyricSchema = new mongoose.Schema(
     lyric: [
       {
         start: {
-          type: String,
+          type: Number,
           required: true,
-          trim: true,
-          lowercase: true,
         },
         content: {
           type: String,

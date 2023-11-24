@@ -29,13 +29,15 @@ const createRoute = (req, type, imgFolder) => {
 const storage = (type, imgFolder) =>
   multer.diskStorage({
     destination: (req, file, cb) => {
-      if (file?.originalname) {
-        const path = createRoute(req, type, imgFolder);
-        fs.mkdirSync(path, { recursive: true });
-        return cb(null, path);
+      try {
+        if (file?.originalname) {
+          const path = createRoute(req, type, imgFolder);
+          fs.mkdirSync(path, { recursive: true });
+          return cb(null, path);
+        }
+      } catch (error) {
+        cb(error, null);
       }
-
-      cb(null, null);
     },
     filename: async (req, file, cb) => {
       if (file?.originalname) {

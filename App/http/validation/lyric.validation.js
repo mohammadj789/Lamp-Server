@@ -2,9 +2,7 @@ const Joi = require("joi");
 const { MONGO_ID_PATERN } = require("../../utils/paterns");
 
 const lyricSchema = Joi.object({
-  start: Joi.string()
-    .pattern(/^(\d{2}):(\d{2})$/)
-    .required(),
+  start: Joi.number().required(),
   content: Joi.string().required(),
 });
 

@@ -15,7 +15,9 @@ class Application {
     const morgan = require("morgan");
     const swaggerJSDoc = require("swagger-jsdoc");
     const swaggerUI = require("swagger-ui-express");
+    const cors = require("cors");
     this.#app.use(this.#express.json());
+    this.#app.use(cors());
     this.#app.use(this.#express.urlencoded({ extended: true }));
     this.#app.use(
       this.#express.static(

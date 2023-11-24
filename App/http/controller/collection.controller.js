@@ -406,7 +406,9 @@ class CollectionController extends Controller {
         status: 200,
         collectioans: {
           wished: PopulatedUser.favorit_collections,
-          me: PopulatedUser.Collections,
+          me: PopulatedUser.Collections.filter(
+            (item) => item.type === "playlist"
+          ),
         },
       });
     } catch (error) {

@@ -9,7 +9,6 @@ components:
       properties:
         start:
           type: string
-          pattern: '^(\d{2}):(\d{2})$'
         content:
           type: string
       required:
