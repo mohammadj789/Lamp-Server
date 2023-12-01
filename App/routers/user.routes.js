@@ -16,6 +16,19 @@ router.patch(
   ),
   UserController.UpdateProfile
 );
+
+router.post(
+  "/toggle-follow/:id",
+  checkAuth,
+  UserController.toggleFollow
+);
+router.get(
+  "/followings",
+  checkAuth,
+  UserController.getFollowingArtist
+);
+router.get("/followers/:id", UserController.getFollowers);
+router.get("/followings/:id", UserController.getFollowings);
 router.get("/:id", UserController.getUserProfile);
 
 module.exports = { UserRoutes: router };

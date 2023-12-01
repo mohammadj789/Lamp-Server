@@ -14,7 +14,7 @@ const Collection = require("../../models/collection");
 // const {
 //   uploadTrackValidator,
 // } = require("../validation/track.validator");
-
+const mm = require("music-metadata");
 class TrackController extends Controller {
   uplaodTrack = async (req, res, next) => {
     try {
@@ -42,18 +42,15 @@ class TrackController extends Controller {
       const file = req.file;
       console.log(file);
 
-      // await uploadTrackValidator.validateAsync(req.body);
+      await uploadTrackValidator.validateAsync(req.body);
       if (!file) {
         throw createHttpError.BadRequest("please upload a file");
       }
-
-      console.log(req.filepathaddress);
 
       //generate path
       const address = path
         .join(req.filepathaddress[0], req.file.filename)
         .replace(/(\\)/gim, "/");
-      console.log(address);
 
       //validate features
       let features = undefined;
@@ -79,8 +76,10 @@ class TrackController extends Controller {
           );
         }
       }
+      const metadata = await mm.parseFile(
+        path.join(__dirname, "..", "..", "..", address)
+      );
 
-      //create song
       const track = await Song.create({
         title: req.body.title,
         genre: req.body.genre,
@@ -88,6 +87,8 @@ class TrackController extends Controller {
           artist_id: artist._id,
           artist_name: artist.name,
         },
+        album: req.body.title,
+        duration: metadata.format.duration,
         features,
         address,
       });

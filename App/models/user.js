@@ -58,6 +58,16 @@ const userSchema = new mongoose.Schema(
       ref: "Collection",
       default: [],
     },
+    followers: {
+      type: [mongoose.Schema.Types.ObjectId],
+      ref: "User",
+      default: [],
+    },
+    followings: {
+      type: [mongoose.Schema.Types.ObjectId],
+      ref: "User",
+      default: [],
+    },
     score: { type: Number, default: 0 },
     //last visited songs
     streams: {

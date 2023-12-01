@@ -30,6 +30,7 @@ const collectionSchema = new mongoose.Schema(
     ],
     type: { type: String, default: "playlist" },
     status: { type: String, default: "pending" },
+    theme_color: { type: String },
   },
   { timestamps: true }
 );

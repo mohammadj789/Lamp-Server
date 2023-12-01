@@ -13,7 +13,8 @@ const { UserModel } = require("../../models/user");
 const {
   uploadTrackValidator,
 } = require("../validation/track.validator");
-
+const mm = require("music-metadata");
+const Vibrant = require("node-vibrant");
 class CollectionController extends Controller {
   updateThumbnail = async (req, res, next) => {
     try {
@@ -35,10 +36,27 @@ class CollectionController extends Controller {
         )
         .replace(/(\\)/gim, "/");
 
+      const VibrantVar = await Vibrant.from(
+        path.join(
+          __dirname,
+          "..",
+          "..",
+          "..",
+          "static",
+          "public",
+          address
+        )
+      ).getPalette();
+
       //updtae colloction image
       const collection = await Collection.findOneAndUpdate(
         { _id: id, "owner.owner_id": user._id },
-        { $set: { image: address } }
+        {
+          $set: {
+            image: address,
+            theme_color: VibrantVar.Muted.getHex(),
+          },
+        }
       );
 
       if (!collection) throw createHttpError.NotFound();
@@ -53,7 +71,12 @@ class CollectionController extends Controller {
               $in: collection.tracks,
             },
           },
-          { $set: { image: address } }
+          {
+            $set: {
+              image: address,
+              theme_color: VibrantVar.Muted.getHex(),
+            },
+          }
         );
         if (updateResult.modifiedCount === 0)
           throw createHttpError.InternalServerError();
@@ -125,11 +148,12 @@ class CollectionController extends Controller {
 
       await ColloectionTypeValidator.validateAsync(req.params);
       await createCollectionValidator.validateAsync(req.body);
+      console.log(req.params);
 
       //check rolles
       if (
         !["ARTIST", "ADMIN"].includes(user.role) &&
-        type === "album"
+        req.params.type === "album"
       )
         throw createHttpError.BadRequest(
           "you are not allowed to create a album"
@@ -198,8 +222,6 @@ class CollectionController extends Controller {
         throw createHttpError.BadRequest("please upload a file");
       }
 
-      console.log(req.filepathaddress);
-
       //generate path
       const address = path
         .join(req.filepathaddress[0], req.file.filename)
@@ -231,6 +253,14 @@ class CollectionController extends Controller {
         }
       }
 
+      const metadata = await mm.parseFile(
+        path.join(__dirname, "..", "..", "..", address)
+      );
+
+      const colloction = await Collection.findOne({
+        _id: req.params.id,
+        type: "album",
+      });
       //create song
       const track = await Song.create({
         genre: req.body.genre,
@@ -239,17 +269,18 @@ class CollectionController extends Controller {
           artist_id: artist._id,
           artist_name: artist.name,
         },
+        duration: metadata.format.duration,
+        album: colloction.title,
         features,
         address,
       });
       if (!track) throw createHttpError.InternalServerError();
-      //create colloction for track
-      const colloction = await Collection.findOneAndUpdate(
-        { _id: req.params.id, type: "album" },
-        { $push: { tracks: track._id } }
-      );
+      //update collection
+      colloction.tracks.push(track._id);
+      const updatedCollection = await colloction.save();
+
       //remove song on colloctionerror
-      if (!colloction) {
+      if (!updatedCollection) {
         await Song.findByIdAndRemove(track._id);
         throw createHttpError.InternalServerError();
       }

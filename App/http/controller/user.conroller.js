@@ -5,6 +5,7 @@ const { UserModel } = require("../../models/user");
 const { removeErrorFile } = require("../../utils/functions");
 const path = require("path");
 const { CheckIDValidator } = require("../validation/index.validator");
+
 class UserController extends Controller {
   UpdateProfile = async (req, res, next) => {
     try {
@@ -61,6 +62,8 @@ class UserController extends Controller {
         description,
         image,
         listenners,
+        followers,
+        followings,
       } = PopulatedUser;
       //done
       return res.status(200).json({
@@ -75,10 +78,131 @@ class UserController extends Controller {
           description,
           image,
           listenners,
+          followers:
+            PopulatedUser.role === "ARTIST"
+              ? undefined
+              : followers.length,
+          followings:
+            PopulatedUser.role === "ARTIST"
+              ? undefined
+              : followings.length,
         },
       });
     } catch (error) {
       req?.file?.path && removeErrorFile(req?.file?.path);
+      next(error);
+    }
+  };
+  toggleFollow = async (req, res, next) => {
+    try {
+      const user = req.user;
+      const id = req.params.id;
+
+      await CheckIDValidator.validateAsync({
+        id: id,
+      });
+      //get user
+      const targetUser = await UserModel.findById(id);
+      if (!targetUser) throw createHttpError.NotFound();
+      //check for existatnce
+      const index = user.followings.indexOf(id);
+      if (index > -1) {
+        user.followings.splice(index, 1);
+        console.log(
+          targetUser.followers.filter((item) => {
+            console.log(
+              item.toString(),
+              user._id,
+              item.toString() !== user._id.toString()
+            );
+
+            return item !== user._id.toString();
+          })
+        );
+
+        targetUser.followers = targetUser.followers.filter(
+          (item) => item.toString() !== user._id.toString()
+        );
+      } else {
+        user.followings.push(targetUser._id);
+        targetUser.followers.push(user._id);
+      }
+      const savedUser = await user.save();
+      const savedTargetUser = await targetUser.save();
+      if (!savedUser || !savedTargetUser)
+        throw createHttpError.InternalServerError();
+      res.status(200).json({
+        status: 200,
+        message: `user ${
+          index > -1 ? "removed" : "added"
+        } succesfully`,
+      });
+    } catch (error) {
+      next(error);
+    }
+  };
+  getFollowers = async (req, res, next) => {
+    try {
+      const id = req.params.id;
+      await CheckIDValidator.validateAsync({
+        id: id,
+      });
+      const PopulatedUser = await UserModel.findById(id).populate({
+        path: "followers",
+        select: "image username name",
+      });
+      console.log(PopulatedUser);
+
+      if (!PopulatedUser) throw createHttpError.InternalServerError();
+      const { followers } = PopulatedUser;
+
+      //done
+      return res.status(200).json({
+        status: 200,
+        followers,
+      });
+    } catch (error) {
+      next(error);
+    }
+  };
+  getFollowings = async (req, res, next) => {
+    try {
+      const id = req.params.id;
+      await CheckIDValidator.validateAsync({
+        id: id,
+      });
+      const PopulatedUser = await UserModel.findById(id).populate({
+        path: "followings",
+        select: "image username name",
+      });
+
+      if (!PopulatedUser) throw createHttpError.InternalServerError();
+      const { followings } = PopulatedUser;
+      //done
+      return res.status(200).json({
+        status: 200,
+        followings,
+      });
+    } catch (error) {
+      next(error);
+    }
+  };
+  getFollowingArtist = async (req, res, next) => {
+    try {
+      const PopulatedUser = await req.user.populate({
+        path: "followings",
+        select: "image username name role",
+      });
+
+      const { followings } = PopulatedUser;
+      const artist = followings.filter(
+        (user) => user.role === "ARTIST"
+      );
+      return res.status(200).json({
+        status: 200,
+        artist,
+      });
+    } catch (error) {
       next(error);
     }
   };

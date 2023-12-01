@@ -50,6 +50,11 @@ const songSchema = new mongoose.Schema(
     image: { type: String },
     status: { type: String, default: "pending" },
     stream: { type: Number, default: 0 },
+    theme_color: { type: String },
+    duration: { type: Number },
+    album: {
+      type: String,
+    },
   },
   { timestamps: true }
 );
