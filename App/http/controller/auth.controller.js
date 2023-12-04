@@ -9,6 +9,23 @@ const { Controller } = require("./Controller");
 const { compare } = require("bcrypt");
 
 class AuthController extends Controller {
+  async getUser(req, res, next) {
+    try {
+      const user = req.user;
+      console.log(user);
+
+      const PopulatedCollection = await user.populate({
+        path: "tracks favorit_collections Collections favorit_songs",
+        select: "", // Add the fields you want to select
+      });
+      res.status(201).json({
+        status: 201,
+        data: { user: PopulatedCollection },
+      });
+    } catch (error) {
+      next(error);
+    }
+  }
   async signup(req, res, next) {
     try {
       await signupValidator.validateAsync(req.body);
@@ -25,7 +42,14 @@ class AuthController extends Controller {
           "somthing went wrong"
         );
       const token = await user.createAuthTocken();
-      res.status(201).json({ status: 201, data: { token, user } });
+      const PopulatedCollection = await user.populate({
+        path: "tracks favorit_collections Collections favorit_songs",
+        select: "", // Add the fields you want to select
+      });
+      res.status(201).json({
+        status: 201,
+        data: { token, user: PopulatedCollection },
+      });
     } catch (error) {
       next(error);
     }
@@ -37,7 +61,15 @@ class AuthController extends Controller {
       const { email, password } = req.body;
       const user = await UserModel.checkForLogin({ email, password });
       const token = await user.createAuthTocken();
-      res.status(200).json({ status: 200, data: { token, user } });
+      const PopulatedCollection = await user.populate({
+        path: "tracks favorit_collections Collections favorit_songs",
+        select: "", // Add the fields you want to select
+      });
+
+      res.status(200).json({
+        status: 200,
+        data: { token, user: PopulatedCollection },
+      });
     } catch (error) {
       next(error);
     }

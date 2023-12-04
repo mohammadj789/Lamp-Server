@@ -90,6 +90,19 @@ components:
       401:
         description: wrong credentials
 
+/auth:
+  get:
+    tags: [Auth]
+    summary: get user by token
+
+    responses:
+      200:
+        description: successfully
+      401:
+        description: unauthorized
+      500:
+        description: internalservererror
+
 /auth/resetpass:
   post:
     tags: [Auth]
