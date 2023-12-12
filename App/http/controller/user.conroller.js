@@ -5,6 +5,8 @@ const { UserModel } = require("../../models/user");
 const { removeErrorFile } = require("../../utils/functions");
 const path = require("path");
 const { CheckIDValidator } = require("../validation/index.validator");
+const Song = require("../../models/song");
+const Collection = require("../../models/collection");
 
 class UserController extends Controller {
   UpdateProfile = async (req, res, next) => {
@@ -202,6 +204,27 @@ class UserController extends Controller {
         status: 200,
         artist,
       });
+    } catch (error) {
+      next(error);
+    }
+  };
+  search = async (req, res, next) => {
+    try {
+      const search = req.params.search;
+
+      const users = await UserModel.find(
+        {
+          $text: { $search: search },
+        },
+        { image: 1, name: 1, username: 1, _id: 1, role: 1 }
+      );
+      const tracks = await Song.find({
+        $text: { $search: search },
+      });
+      const collection = await Collection.find({
+        $text: { $search: search },
+      });
+      res.status(200).json({ collection, tracks, users });
     } catch (error) {
       next(error);
     }

@@ -34,5 +34,10 @@ const collectionSchema = new mongoose.Schema(
   },
   { timestamps: true }
 );
+collectionSchema.index({
+  title: "text",
+  // short_text: "text",
+  // title: "text",
+});
 const Collection = mongoose.model("Collection", collectionSchema);
 module.exports = Collection;

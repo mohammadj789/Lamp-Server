@@ -94,7 +94,10 @@ const userSchema = new mongoose.Schema(
 //   localField: "_id",
 //   foreignField: "writer",
 // });
-
+userSchema.index({
+  name: "text",
+  username: "text",
+});
 userSchema.pre("save", async function (next) {
   const user = this;
   if (user.isModified("password")) {

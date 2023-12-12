@@ -29,6 +29,7 @@ router.get(
 );
 router.get("/followers/:id", UserController.getFollowers);
 router.get("/followings/:id", UserController.getFollowings);
+router.get("/search/:search", UserController.search);
 router.get("/:id", UserController.getUserProfile);
 
 module.exports = { UserRoutes: router };

@@ -102,6 +102,24 @@ tags:
         description: unauthorized
       500:
         description: internal server error
+/user/search/{search}:
+  get:
+    tags: [User]
+    summary: search in db
+    parameters:
+      - name: search
+        in: path
+        description: search term
+        required: true
+        schema:
+          type: string
+    responses:
+      200:
+        description: success
+      401:
+        description: unauthorized
+      500:
+        description: internal server error
 /user/followings:
   get:
     tags: [User]
