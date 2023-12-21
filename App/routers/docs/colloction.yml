@@ -18,7 +18,7 @@ components:
           description: id of playlist
 
 /collection/updateTumbnail/{id}:
-  post:
+  patch:
     tags:
       - Colloction
     summary: Update a song's thumbnail

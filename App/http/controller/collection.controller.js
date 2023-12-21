@@ -437,9 +437,11 @@ class CollectionController extends Controller {
         status: 200,
         collectioans: {
           wished: PopulatedUser.favorit_collections,
-          me: PopulatedUser.Collections.filter(
-            (item) => item.type === "playlist"
-          ),
+          me: PopulatedUser.Collections,
+
+          // .filter(
+          //   (item) => item.type === "playlist"
+          // ),
         },
       });
     } catch (error) {

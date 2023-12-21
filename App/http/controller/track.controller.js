@@ -11,9 +11,9 @@ const Song = require("../../models/song");
 const { default: mongoose } = require("mongoose");
 const { CheckIDValidator } = require("../validation/index.validator");
 const Collection = require("../../models/collection");
-// const {
-//   uploadTrackValidator,
-// } = require("../validation/track.validator");
+const {
+  uploadTrackValidator,
+} = require("../validation/track.validator");
 const mm = require("music-metadata");
 class TrackController extends Controller {
   uplaodTrack = async (req, res, next) => {

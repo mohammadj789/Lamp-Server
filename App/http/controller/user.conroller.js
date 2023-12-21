@@ -80,14 +80,8 @@ class UserController extends Controller {
           description,
           image,
           listenners,
-          followers:
-            PopulatedUser.role === "ARTIST"
-              ? undefined
-              : followers.length,
-          followings:
-            PopulatedUser.role === "ARTIST"
-              ? undefined
-              : followings.length,
+          followers: followers.length,
+          followings: followings.length,
         },
       });
     } catch (error) {
@@ -151,7 +145,7 @@ class UserController extends Controller {
       });
       const PopulatedUser = await UserModel.findById(id).populate({
         path: "followers",
-        select: "image username name",
+        select: "image username name role",
       });
       console.log(PopulatedUser);
 
@@ -175,7 +169,7 @@ class UserController extends Controller {
       });
       const PopulatedUser = await UserModel.findById(id).populate({
         path: "followings",
-        select: "image username name",
+        select: "image username name role",
       });
 
       if (!PopulatedUser) throw createHttpError.InternalServerError();
@@ -225,6 +219,23 @@ class UserController extends Controller {
         $text: { $search: search },
       });
       res.status(200).json({ collection, tracks, users });
+    } catch (error) {
+      next(error);
+    }
+  };
+  searchArtist = async (req, res, next) => {
+    try {
+      const search = req.params.search;
+
+      const users = await UserModel.find(
+        {
+          $text: { $search: search },
+          role: "ARTIST",
+        },
+        { image: 1, name: 1, username: 1, _id: 1 }
+      );
+
+      res.status(200).json(users);
     } catch (error) {
       next(error);
     }

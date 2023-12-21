@@ -11,7 +11,7 @@ const { stringToArray } = require("../http/middleware/stringToArray");
 const router = Router();
 
 //update colloction image
-router.post(
+router.patch(
   "/updateTumbnail/:id",
   checkAuth,
   multerUpload("public", "Thumbnail", 3, /\.(png|jpg|jpeg)/).single(
