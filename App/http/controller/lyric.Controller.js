@@ -5,6 +5,7 @@ const Lyric = require("../../models/lyric");
 const {
   songSchema,
   lyricStatusValidator,
+  syncsongSchema,
 } = require("../validation/lyric.validation");
 const Song = require("../../models/song");
 const { CheckIDValidator } = require("../validation/index.validator");
@@ -25,19 +26,23 @@ class LyricController extends Controller {
         throw createHttpError.BadRequest(
           "this track already has a valid lyric"
         );
+
       const prevlyric = await Lyric.findOne({
         track: track._id,
         "writer.writer_id": user._id,
       });
+
       if (prevlyric?.status === "pending")
         throw createHttpError.BadRequest(
-          "you have submitted your request once.wait"
+          "you have submitted your request once. wait!"
         );
       else if (prevlyric?.status === "rejected")
         throw createHttpError.BadRequest("your request is rejected");
 
       const lyric = await Lyric.create({
-        lyric: req.body.lyric,
+        lyric: req.body.lyric.map((item) => {
+          return { content: item };
+        }),
         track: req.body.track,
         writer: {
           writer_id: user._id,
@@ -46,8 +51,124 @@ class LyricController extends Controller {
       });
       if (!lyric) throw createHttpError.InternalServerError();
       res.status(201).send({
-        status: 200,
+        status: 201,
         message: 'we"ll respond to your request ASAP',
+        lyric,
+      });
+    } catch (error) {
+      next(error);
+    }
+  }
+  async syncLyric(req, res, next) {
+    try {
+      const user = req.user;
+      await syncsongSchema.validateAsync(req.body);
+
+      const lyric = await Lyric.findOne({
+        _id: req.body.lyric,
+        status: "accepted",
+        is_sync: false,
+      });
+
+      if (!lyric) throw createHttpError.NotFound();
+
+      if (lyric.lyric.length !== req.body.timestamps.length)
+        throw createHttpError.BadRequest(
+          "match the lyric line count"
+        );
+      const is_submited = lyric.sync_requests.findIndex(
+        (req) => req.user.toString() === user._id.toString()
+      );
+      if (is_submited > -1)
+        throw createHttpError.BadRequest(
+          "you have submitted your request"
+        );
+
+      lyric.sync_requests.push({
+        timestamps: req.body.timestamps,
+        user: user._id,
+      });
+
+      const savedlyric = await lyric.save();
+      if (!savedlyric) throw createHttpError.InternalServerError();
+
+      res.status(200).send({
+        status: 200,
+        message: "we'll check your request asap",
+        // lyric: savedlyric,
+      });
+    } catch (error) {
+      next(error);
+    }
+  }
+  async getSyncRequests(req, res, next) {
+    try {
+      console.log();
+
+      const user = req.user;
+      if (user.role !== "ADMIN")
+        throw createHttpError.Unauthorized(
+          "you are not allowed here"
+        );
+
+      const LyricId = req.params.lyricID;
+
+      await CheckIDValidator.validateAsync({
+        id: LyricId,
+      });
+
+      const lyric = await Lyric.findOne({
+        _id: LyricId,
+        is_sync: false,
+      });
+      if (!lyric) throw createHttpError.NotFound();
+      res
+        .status(200)
+        .json({ status: 200, requests: lyric.sync_requests });
+    } catch (error) {
+      next(error);
+    }
+  }
+  async changeSyncstatus(req, res, next) {
+    try {
+      const user = req.user;
+      if (user.role !== "ADMIN")
+        throw createHttpError.Unauthorized(
+          "you are not allowed here"
+        );
+      console.log(req.params);
+
+      const syncID = req.body.syncID;
+      const lyricID = req.body.lyricID;
+
+      await CheckIDValidator.validateAsync({
+        id: lyricID,
+      });
+      await CheckIDValidator.validateAsync({
+        id: syncID,
+      });
+
+      const lyric = await Lyric.findOne({
+        _id: lyricID,
+        status: "accepted",
+        is_sync: false,
+      });
+      if (!lyric) throw createHttpError.NotFound();
+      if (!syncObject) throw createHttpError.NotFound();
+      const syncObject = lyric.sync_requests.find(
+        (item) => item._id.toString() === syncID
+      );
+
+      lyric.lyric = lyric.lyric.map((line, i) => {
+        return { ...line, start: syncObject.timestamps[i] };
+      });
+      lyric.is_sync = true;
+      lyric.sync_requests = [];
+      const savedlyric = await lyric.save();
+      if (!savedlyric) throw createHttpError.InternalServerError();
+
+      res.status(200).send({
+        status: 200,
         lyric,
       });
     } catch (error) {
@@ -89,6 +210,7 @@ class LyricController extends Controller {
       next(error);
     }
   }
+
   async changestatus(req, res, next) {
     try {
       const user = req.user;
@@ -139,6 +261,7 @@ class LyricController extends Controller {
       next(error);
     }
   }
+
   async getOneLyric(req, res, next) {
     try {
       const lyricID = req.params.lyricID;

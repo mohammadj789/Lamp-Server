@@ -1,3 +1,4 @@
+const { boolean } = require("joi");
 const mongoose = require("mongoose");
 const lyricSchema = new mongoose.Schema(
   {
@@ -6,7 +7,7 @@ const lyricSchema = new mongoose.Schema(
       {
         start: {
           type: Number,
-          required: true,
+          default: 0,
         },
         content: {
           type: String,
@@ -16,6 +17,7 @@ const lyricSchema = new mongoose.Schema(
         },
       },
     ],
+
     status: { type: String, default: "pending" },
     writer: {
       writer_id: {
@@ -29,6 +31,13 @@ const lyricSchema = new mongoose.Schema(
         lowercase: true,
       },
     },
+    is_sync: { type: Boolean, default: false },
+    sync_requests: [
+      {
+        timestamps: [Number],
+        user: { type: mongoose.Schema.Types.ObjectId, ref: "User" },
+      },
+    ],
   },
   { timestamps: true }
 );

@@ -4,17 +4,6 @@ tags:
 
 components:
   schemas:
-    LyricLine:
-      type: object
-      properties:
-        start:
-          type: string
-        content:
-          type: string
-      required:
-        - start
-        - content
-
     newlyric:
       type: object
       properties:
@@ -23,9 +12,32 @@ components:
         lyric:
           type: array
           items:
-            $ref: "#/components/schemas/LyricLine"
+            type: string
       required:
         - lyric
+    synclyric:
+      type: object
+      properties:
+        lyric:
+          type: string
+        timestamps:
+          type: array
+          items:
+            type: integer
+      required:
+        - timestamps
+        - lyric
+    syncstatus:
+      type: object
+      properties:
+        lyricID:
+          type: string
+        syncID:
+          type: string
+
+      required:
+        - syncID
+        - lyricID
 
 /lyric/new:
   post:
@@ -37,6 +49,24 @@ components:
         application/json:
           schema:
             $ref: "#/components/schemas/newlyric"
+
+    responses:
+      201:
+        description: created
+      400:
+        description: bad request
+      500:
+        description: InternalServerError
+/lyric/sync:
+  post:
+    tags: [Lyric]
+    summary: sync a  lyric
+    requestBody:
+      required: true
+      content:
+        application/json:
+          schema:
+            $ref: "#/components/schemas/synclyric"
 
     responses:
       201:
@@ -94,10 +124,48 @@ components:
         description: unauthorized
       500:
         description: internal server error
+/lyric/status/sync:
+  post:
+    tags: [Lyric]
+    summary: sync a  lyric
+    requestBody:
+      required: true
+      content:
+        application/json:
+          schema:
+            $ref: "#/components/schemas/syncstatus"
+
+    responses:
+      200:
+        description: successfull
+      401:
+        description: unauthorized
+      500:
+        description: internal server error
+
 /lyric/{lyricID}:
   get:
     tags: [Lyric]
     summary: get one lyric
+    parameters:
+      - name: lyricID
+        in: path
+        description: ID of the lyric
+        required: true
+        schema:
+          type: string
+
+    responses:
+      200:
+        description: successfull
+      401:
+        description: unauthorized
+      500:
+        description: internal server error
+/lyric/sync/{lyricID}/all:
+  get:
+    tags: [Lyric]
+    summary: get lyric sync requests
     parameters:
       - name: lyricID
         in: path

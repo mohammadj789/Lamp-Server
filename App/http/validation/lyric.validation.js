@@ -1,16 +1,17 @@
 const Joi = require("joi");
 const { MONGO_ID_PATERN } = require("../../utils/paterns");
 
-const lyricSchema = Joi.object({
-  start: Joi.number().required(),
-  content: Joi.string().required(),
-});
-
 const songSchema = Joi.object({
-  track: Joi.string().optional().pattern(MONGO_ID_PATERN).messages({
+  track: Joi.string().required().pattern(MONGO_ID_PATERN).messages({
     "string.pattern.base": "please enter valid Id for artist",
   }),
-  lyric: Joi.array().items(lyricSchema).required(),
+  lyric: Joi.array().items(Joi.string()).required(),
+});
+const syncsongSchema = Joi.object({
+  lyric: Joi.string().required().pattern(MONGO_ID_PATERN).messages({
+    "string.pattern.base": "please enter valid Id for artist",
+  }),
+  timestamps: Joi.array().items(Joi.number()).required(),
 });
 const lyricStatusValidator = Joi.object({
   type: Joi.string()
@@ -18,4 +19,4 @@ const lyricStatusValidator = Joi.object({
     .required(),
 });
 
-module.exports = { songSchema, lyricStatusValidator };
+module.exports = { songSchema, lyricStatusValidator, syncsongSchema };
