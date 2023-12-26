@@ -397,21 +397,23 @@ class CollectionController extends Controller {
       const index = user.favorit_collections.indexOf(
         req.params.collectionID
       );
+      const collectioan = await Collection.findById(
+        req.params.collectionID
+      );
+      if (!collectioan)
+        throw createHttpError.NotFound(
+          "collection is not a valid one"
+        );
       if (index > -1) {
         user.favorit_collections.splice(index, 1);
+        collectioan.likes = collectioan.likes - 1;
       } else {
-        const collectioan = await Collection.findById(
-          req.params.collectionID
-        );
-        if (!collectioan)
-          throw createHttpError.NotFound(
-            "collection is not a valid one"
-          );
-
         user.favorit_collections.push(collectioan._id);
+        collectioan.likes = collectioan.likes + 1;
       }
       const saved = await user.save();
-      if (!saved) {
+      const savedCollection = await collectioan.save();
+      if (!saved || !savedCollection) {
         throw createHttpError.InternalServerError();
       }
       return res.status(200).json({
@@ -467,6 +469,20 @@ class CollectionController extends Controller {
         status: 200,
         collection: PopulatedCollection,
       });
+    } catch (error) {
+      next(error);
+    }
+  };
+  getPopularCollections = async (req, res, next) => {
+    try {
+      const top10Collections = await Collection.aggregate([
+        // { $match: { status: 'approved' } }, // Filter collections by status, adjust as needed
+        { $sort: { likes: -1 } }, // Sort by stream in descending order
+        { $limit: 10 }, // Limit the results to the top 10 collections
+      ]);
+      res
+        .status(200)
+        .json({ status: 200, collections: top10Collections });
     } catch (error) {
       next(error);
     }

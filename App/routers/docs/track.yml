@@ -79,6 +79,23 @@ components:
         description: ok
       404:
         description: not found
+/track/update-stats/{id}:
+  get:
+    tags:
+      - tracks
+    summary: stream a song
+    parameters:
+      - name: id
+        in: path
+        description: ID of the track
+        required: true
+        schema:
+          type: string
+    responses:
+      200:
+        description: ok
+      404:
+        description: not found
 
 /track/favorite/{trackID}:
   post:
@@ -104,7 +121,7 @@ components:
 /track/{id}:
   get:
     tags: [tracks]
-    summary: get all artist Colloction
+    summary: get track by id
     parameters:
       - name: id
         in: path
@@ -126,6 +143,19 @@ components:
   get:
     tags: [tracks]
     summary: get a favorit collection
+    responses:
+      200:
+        description: done successfully
+      401:
+        description: unauthorized
+      400:
+        description: bad request
+      500:
+        description: internal server error
+/track/toptracks:
+  get:
+    tags: [tracks]
+    summary: get top tracks
     responses:
       200:
         description: done successfully

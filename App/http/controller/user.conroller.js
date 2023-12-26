@@ -240,5 +240,62 @@ class UserController extends Controller {
       next(error);
     }
   };
+  getTracks = async (req, res, next) => {
+    try {
+      const user = req.user;
+      console.log(user);
+
+      const PopulatedUser = await user.populate({
+        path: "streams.TrackId",
+        // select: "-address -status artist", // Add the fields you want to select
+      });
+      return res.status(200).json({
+        status: 200,
+        streams: PopulatedUser.streams,
+      });
+    } catch (error) {
+      next(error);
+    }
+  };
+  getArtistTracks = async (req, res, next) => {
+    try {
+      const ArtistId = req.params.id;
+      await CheckIDValidator.validateAsync({
+        id: ArtistId,
+      });
+      const user = await UserModel.findById(ArtistId);
+
+      if (!user) throw createHttpError.NotFound();
+
+      if (user.role !== "ARTIST")
+        throw createHttpError.Unauthorized();
+
+      const PopulatedUser = await user.populate({
+        path: "tracks",
+        select: "-address -status -artist", // Add the fields you want to select
+      });
+      return res.status(200).json({
+        status: 200,
+        tracks: {
+          artist: { id: user._id, name: user.name },
+          tracks: PopulatedUser.tracks,
+        },
+      });
+    } catch (error) {
+      next(error);
+    }
+  };
+  getPopularArtists = async (req, res, next) => {
+    try {
+      const popularArtist = await UserModel.aggregate([
+        { $match: { role: "ARTIST" } }, // Filter tracks by status, adjust as needed
+        { $sort: { listenners: -1 } }, // Sort by stream in descending order
+        { $limit: 10 }, // Limit the results to the top 10 tracks
+      ]);
+      res.status(200).json({ status: 200, artists: popularArtist });
+    } catch (error) {
+      next(error);
+    }
+  };
 }
 module.exports = { UserController: new UserController() };

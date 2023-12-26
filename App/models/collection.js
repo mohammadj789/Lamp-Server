@@ -7,7 +7,8 @@ const collectionSchema = new mongoose.Schema(
       trim: true,
       lowercase: true,
     },
-
+    likes: { default: 0, type: Number },
+    streams: { default: 0, type: Number },
     image: { type: String },
     owner: {
       owner_id: {

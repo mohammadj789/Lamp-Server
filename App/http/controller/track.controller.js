@@ -131,11 +131,48 @@ class TrackController extends Controller {
     }
   };
 
-  streamTrack = async (req, res, next) => {
+  updateStreamTrackStats = async (req, res, next) => {
     try {
       const user = req.user;
       //validate id and song
 
+      await CheckIDValidator.validateAsync(req.params);
+      const id = req.params.id;
+      const song = await Song.findById(id);
+      if (!song) throw createHttpError.NotFound("no song were found");
+      console.log(song.duration);
+
+      const isStreamed = user.streams.findIndex((item) => {
+        return item?.TrackId.toString() === song._id.toString();
+      });
+      if (isStreamed === -1) {
+        song.stream += 1;
+        user.streams.push({ TrackId: song._id, count: 1 });
+      } else if (
+        isStreamed > -1 &&
+        Date.now() -
+          new Date(user.streams[isStreamed]?.addedAt).getTime() >
+          song.duration * 1000
+      ) {
+        song.stream += 1;
+
+        user.streams[isStreamed] = {
+          TrackId: song._id,
+          addedAt: new Date(),
+          count: user.streams[isStreamed].count + 1,
+        };
+      }
+      const savedUser = user.save();
+      const savedTrack = song.save();
+      if (!savedTrack || !savedUser)
+        throw createHttpError.InternalServerError();
+      res.status(200).send();
+    } catch (error) {
+      next(error);
+    }
+  };
+  streamTrack = async (req, res, next) => {
+    try {
       await CheckIDValidator.validateAsync(req.params);
       const id = req.params.id;
       const song = await Song.findById(id);
@@ -147,30 +184,7 @@ class TrackController extends Controller {
         "..",
         song.address
       );
-      if (user) {
-        const isStreamed = user.streams.findIndex((item) => {
-          return item?.TrackId.toString() === song._id.toString();
-        });
-        if (isStreamed === -1) {
-          song.stream += 1;
-          user.streams.push({ TrackId: song._id, count: 1 });
-        } else if (
-          isStreamed > -1 &&
-          Date.now() -
-            new Date(user.streams[isStreamed]?.addedAt).getTime() >
-            3 * 60 * 1000
-        ) {
-          song.stream += 1;
 
-          user.streams[isStreamed] = {
-            TrackId: song._id,
-            addedAt: new Date(),
-            count: user.streams[isStreamed].count + 1,
-          };
-        }
-        user.save();
-        song.save();
-      }
       const stat = fs.statSync(filePath);
       const fileSize = stat.size;
       const range = req.headers.range;
@@ -257,26 +271,28 @@ class TrackController extends Controller {
       next(error);
     }
   };
-  getTracks = async (req, res, next) => {
+
+  getTopTracks = async (req, res, next) => {
     try {
-      const ArtistId = req.params.id;
+      const top10Tracks = await Song.aggregate([
+        // { $match: { status: 'approved' } }, // Filter tracks by status, adjust as needed
+        { $sort: { stream: -1 } }, // Sort by stream in descending order
+        { $limit: 10 }, // Limit the results to the top 10 tracks
+      ]);
+      res.status(200).json({ status: 200, tracks: top10Tracks });
+    } catch (error) {
+      next(error);
+    }
+  };
+  getTrackById = async (req, res, next) => {
+    try {
+      const TrackId = req.params.id;
       await CheckIDValidator.validateAsync({
-        id: ArtistId,
+        id: TrackId,
       });
-      const user = await UserModel.findById(ArtistId);
-      if (user.role !== "ARTIST")
-        throw createHttpError.Unauthorized();
-      const PopulatedUser = await user.populate({
-        path: "tracks",
-        select: "-address -status -artist", // Add the fields you want to select
-      });
-      return res.status(200).json({
-        status: 200,
-        tracks: {
-          artist: { id: user._id, name: user.name },
-          tracks: PopulatedUser.tracks,
-        },
-      });
+      const track = await Song.findById(TrackId);
+      if (!track) throw createHttpError.NotFound();
+      res.status(200).json({ status: 200, track: track });
     } catch (error) {
       next(error);
     }

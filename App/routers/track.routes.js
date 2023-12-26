@@ -26,7 +26,12 @@ router.post(
   TrackController.changeFavorits
 );
 router.get("/favorite", checkAuth, TrackController.getFavorits);
-router.get("/:id", TrackController.getTracks);
-
-router.get("/stream/:id", OptioanalAuth, TrackController.streamTrack);
+router.get("/toptracks", TrackController.getTopTracks);
+router.get("/:id", TrackController.getTrackById);
+router.get("/stream/:id", TrackController.streamTrack);
+router.get(
+  "/update-stats/:id",
+  checkAuth,
+  TrackController.updateStreamTrackStats
+);
 module.exports = { TrackRoutes: router };

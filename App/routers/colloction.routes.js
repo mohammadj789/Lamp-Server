@@ -59,6 +59,10 @@ router.post(
   checkAuth,
   CollectionController.changeFavorits
 );
+router.get(
+  "/topcollection",
+  CollectionController.getPopularCollections
+);
 router.get("/", checkAuth, CollectionController.getCollections);
 router.get("/:collectionID", CollectionController.getCollectionById);
 module.exports = { CollectionRoutes: router };

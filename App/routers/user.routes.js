@@ -35,6 +35,8 @@ router.get(
   checkAuth,
   UserController.searchArtist
 );
+router.get("/artist/popular", UserController.getPopularArtists);
+router.get("/played", checkAuth, UserController.getTracks);
+router.get("/tracks/:id", UserController.getArtistTracks);
 router.get("/:id", UserController.getUserProfile);
-
 module.exports = { UserRoutes: router };
