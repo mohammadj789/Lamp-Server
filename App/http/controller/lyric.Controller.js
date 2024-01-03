@@ -103,8 +103,6 @@ class LyricController extends Controller {
   }
   async getSyncRequests(req, res, next) {
     try {
-      console.log();
-
       const user = req.user;
       if (user.role !== "ADMIN")
         throw createHttpError.Unauthorized(
@@ -136,7 +134,6 @@ class LyricController extends Controller {
         throw createHttpError.Unauthorized(
           "you are not allowed here"
         );
-      console.log(req.params);
 
       const syncID = req.body.syncID;
       const lyricID = req.body.lyricID;
@@ -154,11 +151,11 @@ class LyricController extends Controller {
         is_sync: false,
       });
       if (!lyric) throw createHttpError.NotFound();
-      if (!syncObject) throw createHttpError.NotFound();
+
       const syncObject = lyric.sync_requests.find(
         (item) => item._id.toString() === syncID
       );
-
+      if (!syncObject) throw createHttpError.NotFound();
       lyric.lyric = lyric.lyric.map((line, i) => {
         return { ...line, start: syncObject.timestamps[i] };
       });
@@ -269,7 +266,10 @@ class LyricController extends Controller {
       await CheckIDValidator.validateAsync({
         id: lyricID,
       });
-      const lyric = await Lyric.findById(lyricID);
+      const lyric = await Lyric.findById(lyricID).populate({
+        path: "track",
+        // select: "", // Add the fields you want to select
+      });
 
       if (!lyric) throw createHttpError.NotFound();
 

@@ -148,7 +148,6 @@ class CollectionController extends Controller {
 
       await ColloectionTypeValidator.validateAsync(req.params);
       await createCollectionValidator.validateAsync(req.body);
-      console.log(req.params);
 
       //check rolles
       if (
@@ -226,7 +225,6 @@ class CollectionController extends Controller {
       const address = path
         .join(req.filepathaddress[0], req.file.filename)
         .replace(/(\\)/gim, "/");
-      console.log(address);
 
       //validate features
       let features = undefined;
@@ -311,7 +309,6 @@ class CollectionController extends Controller {
   addTrackToPlaylist = async (req, res, next) => {
     try {
       const user = req.user;
-      console.log(req.body);
 
       await CheckIDValidator.validateAsync({
         id: req.body.trackID,
@@ -455,7 +452,6 @@ class CollectionController extends Controller {
       await CheckIDValidator.validateAsync({
         id: req.params.collectionID,
       });
-      console.log(req.params.collectionID);
 
       const PopulatedCollection = await Collection.findById(
         req.params.collectionID

@@ -104,17 +104,6 @@ class UserController extends Controller {
       const index = user.followings.indexOf(id);
       if (index > -1) {
         user.followings.splice(index, 1);
-        console.log(
-          targetUser.followers.filter((item) => {
-            console.log(
-              item.toString(),
-              user._id,
-              item.toString() !== user._id.toString()
-            );
-
-            return item !== user._id.toString();
-          })
-        );
 
         targetUser.followers = targetUser.followers.filter(
           (item) => item.toString() !== user._id.toString()
@@ -147,7 +136,6 @@ class UserController extends Controller {
         path: "followers",
         select: "image username name role",
       });
-      console.log(PopulatedUser);
 
       if (!PopulatedUser) throw createHttpError.InternalServerError();
       const { followers } = PopulatedUser;
@@ -243,7 +231,6 @@ class UserController extends Controller {
   getTracks = async (req, res, next) => {
     try {
       const user = req.user;
-      console.log(user);
 
       const PopulatedUser = await user.populate({
         path: "streams.TrackId",

@@ -2,6 +2,7 @@ class Application {
   #express = require("express");
   #app = this.#express();
   #PORT;
+  #io;
   constructor(PORT, DB_URL) {
     this.#PORT = PORT;
     this.configApplication();
@@ -9,6 +10,7 @@ class Application {
     this.configDB(DB_URL);
     this.configRoutes();
     this.errorHandler();
+    this.configSocket();
   }
   configApplication() {
     const path = require("path");
@@ -16,6 +18,10 @@ class Application {
     const swaggerJSDoc = require("swagger-jsdoc");
     const swaggerUI = require("swagger-ui-express");
     const cors = require("cors");
+    this.#app.use((req, res, next) => {
+      req.io = this.#io;
+      next();
+    });
     this.#app.use(this.#express.json());
     this.#app.use(cors());
     this.#app.use(this.#express.urlencoded({ extended: true }));
@@ -83,9 +89,25 @@ class Application {
     });
   }
 
+  configSocket() {
+    const { socketController } = require("./socket");
+
+    this.#io
+      .of("/socket")
+      .on("connection", socketController(this.io));
+  }
+
   configServer() {
+    const socketIo = require("socket.io");
     const http = require("http");
     const server = http.createServer(this.#app);
+
+    this.#io = socketIo(server, {
+      cors: {
+        origin: "*",
+      },
+    });
+
     server.listen(this.#PORT, () =>
       console.log(
         `Server is running on port ${this.#PORT}. http://localhost:${

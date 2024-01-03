@@ -12,7 +12,6 @@ class AuthController extends Controller {
   async getUser(req, res, next) {
     try {
       const user = req.user;
-      console.log(user);
 
       const PopulatedCollection = await user.populate({
         path: "tracks favorit_collections Collections favorit_songs",

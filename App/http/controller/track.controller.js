@@ -15,6 +15,7 @@ const {
   uploadTrackValidator,
 } = require("../validation/track.validator");
 const mm = require("music-metadata");
+
 class TrackController extends Controller {
   uplaodTrack = async (req, res, next) => {
     try {
@@ -40,7 +41,6 @@ class TrackController extends Controller {
 
       //validate body
       const file = req.file;
-      console.log(file);
 
       await uploadTrackValidator.validateAsync(req.body);
       if (!file) {
@@ -140,7 +140,34 @@ class TrackController extends Controller {
       const id = req.params.id;
       const song = await Song.findById(id);
       if (!song) throw createHttpError.NotFound("no song were found");
-      console.log(song.duration);
+
+      user.followers.forEach((item) => {
+        req.io
+          .of("/socket")
+          .to(item.toString())
+          .emit("log", {
+            song: {
+              title: song.title,
+              credit: song.artist.artist_name,
+              image: song.image,
+              id: song._id,
+              lyric: song.lyric,
+            },
+            user: {
+              username: user.username,
+              id: user._id,
+              image: user.image,
+            },
+            expire: Date.now() + song.duration * 1000,
+          });
+
+        setTimeout(() => {
+          req.io.of("/socket").to(item.toString()).emit("expire", {
+            song: song._id,
+            user: user.username,
+          });
+        }, song.duration * 1000);
+      });
 
       const isStreamed = user.streams.findIndex((item) => {
         return item?.TrackId.toString() === song._id.toString();
@@ -174,6 +201,7 @@ class TrackController extends Controller {
   streamTrack = async (req, res, next) => {
     try {
       await CheckIDValidator.validateAsync(req.params);
+
       const id = req.params.id;
       const song = await Song.findById(id);
       if (!song) throw createHttpError.NotFound("no song were found");
@@ -257,7 +285,6 @@ class TrackController extends Controller {
   getFavorits = async (req, res, next) => {
     try {
       const user = req.user;
-      console.log(user.favorit_songs);
 
       const PopulatedUser = await user.populate({
         path: "favorit_songs",
