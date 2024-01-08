@@ -22,7 +22,9 @@ class UserController extends Controller {
       //generate path
       const address = path
         .join(
-          req.filepathaddress?.[0]?.replace("static\\public", ""),
+          req.filepathaddress?.[0]
+            ?.replace("static\\public", "")
+            .replace("static/public", ""),
           req.file.filename
         )
         .replace(/(\\)/gim, "/");
@@ -280,6 +282,64 @@ class UserController extends Controller {
         { $limit: 10 }, // Limit the results to the top 10 tracks
       ]);
       res.status(200).json({ status: 200, artists: popularArtist });
+    } catch (error) {
+      next(error);
+    }
+  };
+  getSymilarTaste = async (req, res, next) => {
+    try {
+      const user = req.user;
+
+      const PopulatedUser = await user.populate({
+        path: "streams.TrackId",
+        // select: "-address -status artist", // Add the fields you want to select
+      });
+
+      const artistCounts = {};
+      const genreCount = {};
+
+      PopulatedUser.streams.forEach((stream) => {
+        const artistName =
+          PopulatedUser.streams[0].TrackId.artist.artist_name;
+        const genre = PopulatedUser.streams[0].TrackId.genre;
+        if (!artistCounts[artistName]) {
+          artistCounts[artistName] = 1;
+        } else {
+          artistCounts[artistName]++;
+        }
+        if (!genreCount[genre]) {
+          genreCount[genre] = 1;
+        } else {
+          genreCount[genre]++;
+        }
+      });
+      const artistCountsArray = Object.entries(artistCounts);
+      artistCountsArray.sort((a, b) => b[1] - a[1]);
+      const topFiveArtists = artistCountsArray.slice(0, 5);
+      const topFiveArtistNames = topFiveArtists.map(
+        ([artist]) => artist
+      );
+      const genreArray = Object.entries(genreCount);
+      genreArray.sort((a, b) => b[1] - a[1]);
+      const topFiveGenres = genreArray.slice(0, 5);
+      const topFiveGenresName = topFiveGenres.map(
+        ([artist]) => artist
+      );
+
+      const suggestedTracks = await Song.find({
+        $and: [
+          {
+            $or: [
+              { "artist.artist_name": { $in: topFiveArtistNames } },
+              { genre: { $in: topFiveGenresName } },
+            ],
+            _id: { $nin: user.streams },
+          },
+        ],
+      })
+        .sort({ stream: -1 })
+        .limit(10);
+      res.status(200).json({ status: 200, suggestedTracks });
     } catch (error) {
       next(error);
     }

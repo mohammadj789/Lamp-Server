@@ -160,6 +160,17 @@ tags:
         description: unauthorized
       500:
         description: internal server error
+/user/taste:
+  get:
+    tags: [User]
+    summary: get user recently played
+    responses:
+      200:
+        description: success
+      401:
+        description: unauthorized
+      500:
+        description: internal server error
 /user/artist/popular:
   get:
     tags: [User]

@@ -29,24 +29,31 @@ class CollectionController extends Controller {
         throw createHttpError.BadRequest("please upload a file");
       }
       //generate path
-      const address = path
-        .join(
-          req.filepathaddress?.[0]?.replace("static\\public", ""),
-          req.file.filename
-        )
-        .replace(/(\\)/gim, "/");
+
+      const filePath = path.join(
+        req.filepathaddress?.[0]
+          ?.replace("static\\public", "")
+          .replace("static/public", ""),
+        req.file.filename
+      );
+
+      const address = filePath.replace(/(\\)/gim, "/");
+      const diskLocation = path.join(
+        __dirname,
+        "..",
+        "..",
+        "..",
+        "static",
+        "public",
+        address
+      );
+      console.log(diskLocation);
 
       const VibrantVar = await Vibrant.from(
-        path.join(
-          __dirname,
-          "..",
-          "..",
-          "..",
-          "static",
-          "public",
-          address
-        )
+        diskLocation
       ).getPalette();
+
+      console.log("after");
 
       //updtae colloction image
       const collection = await Collection.findOneAndUpdate(
