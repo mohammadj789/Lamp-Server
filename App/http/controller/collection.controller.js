@@ -34,7 +34,7 @@ class CollectionController extends Controller {
         req.filepathaddress?.[0]
           ?.replace("static\\public", "")
           .replace("static/public", ""),
-        req.file.filename
+        req.file.filename,
       );
 
       const address = filePath.replace(/(\\)/gim, "/");
@@ -45,15 +45,11 @@ class CollectionController extends Controller {
         "..",
         "static",
         "public",
-        address
+        address,
       );
-      console.log(diskLocation);
 
-      const VibrantVar = await Vibrant.from(
-        diskLocation
-      ).getPalette();
-
-      console.log("after");
+      const VibrantVar =
+        await Vibrant.from(diskLocation).getPalette();
 
       //updtae colloction image
       const collection = await Collection.findOneAndUpdate(
@@ -63,7 +59,7 @@ class CollectionController extends Controller {
             image: address,
             theme_color: VibrantVar.Muted.getHex(),
           },
-        }
+        },
       );
 
       if (!collection) throw createHttpError.NotFound();
@@ -83,7 +79,7 @@ class CollectionController extends Controller {
               image: address,
               theme_color: VibrantVar.Muted.getHex(),
             },
-          }
+          },
         );
         if (updateResult.modifiedCount === 0)
           throw createHttpError.InternalServerError();
@@ -136,7 +132,7 @@ class CollectionController extends Controller {
           throw createHttpError.InternalServerError();
       }
       user.tracks = user.tracks.filter(
-        (track) => !collection.tracks.includes(track)
+        (track) => !collection.tracks.includes(track),
       );
       user.save();
       //done
@@ -162,7 +158,7 @@ class CollectionController extends Controller {
         req.params.type === "album"
       )
         throw createHttpError.BadRequest(
-          "you are not allowed to create a album"
+          "you are not allowed to create a album",
         );
       if (user.role === "ADMIN" && !req.body.artist) {
         throw createHttpError.BadRequest("you shold set a artist");
@@ -205,7 +201,7 @@ class CollectionController extends Controller {
       //check rolles
       if (!["ARTIST", "ADMIN"].includes(user.role))
         throw createHttpError.Unauthorized(
-          "you are not allowed to upload a song"
+          "you are not allowed to upload a song",
         );
       if (user.role === "ADMIN" && !req.body.artist) {
         throw createHttpError.BadRequest("you shold set a artist");
@@ -238,7 +234,7 @@ class CollectionController extends Controller {
       if (req.body.features.length > 0) {
         if (req.body.features.includes(artist.id))
           throw createHttpError.BadRequest(
-            "enter other artists that are in this song"
+            "enter other artists that are in this song",
           );
 
         features = await UserModel.find(
@@ -248,18 +244,18 @@ class CollectionController extends Controller {
             },
             role: "ARTIST",
           },
-          { artist_name: "$name", artist_id: "$_id" }
+          { artist_name: "$name", artist_id: "$_id" },
         );
 
         if (features.length !== req.body.features.length) {
           throw createHttpError.NotFound(
-            "one of features that you've entered is invalid"
+            "one of features that you've entered is invalid",
           );
         }
       }
 
       const metadata = await mm.parseFile(
-        path.join(__dirname, "..", "..", "..", address)
+        path.join(__dirname, "..", "..", "..", address),
       );
 
       const colloction = await Collection.findOne({
@@ -292,7 +288,7 @@ class CollectionController extends Controller {
       //update user
       const userUpdateresult = await UserModel.findByIdAndUpdate(
         artist._id,
-        { $push: { tracks: track._id } }
+        { $push: { tracks: track._id } },
       );
       //remove song and colloction on cupdate error
       if (!userUpdateresult) {
@@ -386,7 +382,7 @@ class CollectionController extends Controller {
         });
       } else
         throw createHttpError.NotFound(
-          "theres no such track in your playlist"
+          "theres no such track in your playlist",
         );
     } catch (error) {
       next(error);
@@ -399,14 +395,14 @@ class CollectionController extends Controller {
         id: req.params.collectionID,
       });
       const index = user.favorit_collections.indexOf(
-        req.params.collectionID
+        req.params.collectionID,
       );
       const collectioan = await Collection.findById(
-        req.params.collectionID
+        req.params.collectionID,
       );
       if (!collectioan)
         throw createHttpError.NotFound(
-          "collection is not a valid one"
+          "collection is not a valid one",
         );
       if (index > -1) {
         user.favorit_collections.splice(index, 1);
@@ -461,7 +457,7 @@ class CollectionController extends Controller {
       });
 
       const PopulatedCollection = await Collection.findById(
-        req.params.collectionID
+        req.params.collectionID,
       ).populate({
         path: "tracks",
         select: "-address -status", // Add the fields you want to select
@@ -478,14 +474,14 @@ class CollectionController extends Controller {
   };
   getPopularCollections = async (req, res, next) => {
     try {
-      const top10Collections = await Collection.aggregate([
-        // { $match: { status: 'approved' } }, // Filter collections by status, adjust as needed
-        { $sort: { likes: -1 } }, // Sort by stream in descending order
-        { $limit: 10 }, // Limit the results to the top 10 collections
-      ]);
-      res
-        .status(200)
-        .json({ status: 200, collections: top10Collections });
+      const top10Collections = await Collection.find()
+        .sort({ likes: -1 })
+        .limit(10);
+
+      res.status(200).json({
+        status: 200,
+        collections: top10Collections,
+      });
     } catch (error) {
       next(error);
     }

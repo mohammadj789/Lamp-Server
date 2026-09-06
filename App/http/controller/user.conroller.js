@@ -25,7 +25,7 @@ class UserController extends Controller {
           req.filepathaddress?.[0]
             ?.replace("static\\public", "")
             .replace("static/public", ""),
-          req.file.filename
+          req.file.filename,
         )
         .replace(/(\\)/gim, "/");
 
@@ -54,7 +54,7 @@ class UserController extends Controller {
       const PopulatedUser = await UserModel.findById(id).populate({
         path: "tracks Collections",
       });
-
+      const user = PopulatedUser.toJSON();
       if (!PopulatedUser) throw createHttpError.InternalServerError();
       const {
         tracks,
@@ -68,7 +68,7 @@ class UserController extends Controller {
         listenners,
         followers,
         followings,
-      } = PopulatedUser;
+      } = user;
       //done
       return res.status(200).json({
         status: 200,
@@ -108,7 +108,7 @@ class UserController extends Controller {
         user.followings.splice(index, 1);
 
         targetUser.followers = targetUser.followers.filter(
-          (item) => item.toString() !== user._id.toString()
+          (item) => item.toString() !== user._id.toString(),
         );
       } else {
         user.followings.push(targetUser._id);
@@ -182,7 +182,7 @@ class UserController extends Controller {
 
       const { followings } = PopulatedUser;
       const artist = followings.filter(
-        (user) => user.role === "ARTIST"
+        (user) => user.role === "ARTIST",
       );
       return res.status(200).json({
         status: 200,
@@ -200,7 +200,7 @@ class UserController extends Controller {
         {
           $text: { $search: search },
         },
-        { image: 1, name: 1, username: 1, _id: 1, role: 1 }
+        { image: 1, name: 1, username: 1, _id: 1, role: 1 },
       );
       const tracks = await Song.find({
         $text: { $search: search },
@@ -222,7 +222,7 @@ class UserController extends Controller {
           $text: { $search: search },
           role: "ARTIST",
         },
-        { image: 1, name: 1, username: 1, _id: 1 }
+        { image: 1, name: 1, username: 1, _id: 1 },
       );
 
       res.status(200).json(users);
@@ -276,12 +276,16 @@ class UserController extends Controller {
   };
   getPopularArtists = async (req, res, next) => {
     try {
-      const popularArtist = await UserModel.aggregate([
-        { $match: { role: "ARTIST" } }, // Filter tracks by status, adjust as needed
-        { $sort: { listenners: -1 } }, // Sort by stream in descending order
-        { $limit: 10 }, // Limit the results to the top 10 tracks
-      ]);
-      res.status(200).json({ status: 200, artists: popularArtist });
+      const popularArtist = await UserModel.find({
+        role: "ARTIST",
+      })
+        .sort({ listenners: -1 })
+        .limit(10);
+
+      res.status(200).json({
+        status: 200,
+        artists: popularArtist,
+      });
     } catch (error) {
       next(error);
     }
@@ -317,13 +321,13 @@ class UserController extends Controller {
       artistCountsArray.sort((a, b) => b[1] - a[1]);
       const topFiveArtists = artistCountsArray.slice(0, 5);
       const topFiveArtistNames = topFiveArtists.map(
-        ([artist]) => artist
+        ([artist]) => artist,
       );
       const genreArray = Object.entries(genreCount);
       genreArray.sort((a, b) => b[1] - a[1]);
       const topFiveGenres = genreArray.slice(0, 5);
       const topFiveGenresName = topFiveGenres.map(
-        ([artist]) => artist
+        ([artist]) => artist,
       );
 
       const suggestedTracks = await Song.find({

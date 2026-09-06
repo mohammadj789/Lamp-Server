@@ -24,7 +24,7 @@ class TrackController extends Controller {
       //check rolles
       if (!["ARTIST", "ADMIN"].includes(user.role))
         throw createHttpError.Unauthorized(
-          "you are not allowed to upload a song"
+          "you are not allowed to upload a song",
         );
       if (user.role === "ADMIN" && !req.body.artist) {
         throw createHttpError.BadRequest("you shold set a artist");
@@ -57,7 +57,7 @@ class TrackController extends Controller {
       if (req.body.features.length > 0) {
         if (req.body.features.includes(artist.id))
           throw createHttpError.BadRequest(
-            "enter other artists that are in this song"
+            "enter other artists that are in this song",
           );
 
         features = await UserModel.find(
@@ -67,17 +67,17 @@ class TrackController extends Controller {
             },
             role: "ARTIST",
           },
-          { artist_name: "$name", artist_id: "$_id" }
+          { artist_name: "$name", artist_id: "$_id" },
         );
 
         if (features.length !== req.body.features.length) {
           throw createHttpError.NotFound(
-            "one of features that you've entered is invalid"
+            "one of features that you've entered is invalid",
           );
         }
       }
       const metadata = await mm.parseFile(
-        path.join(__dirname, "..", "..", "..", address)
+        path.join(__dirname, "..", "..", "..", address),
       );
 
       const track = await Song.create({
@@ -111,7 +111,7 @@ class TrackController extends Controller {
       //update user
       const userUpdateresult = await UserModel.findByIdAndUpdate(
         artist._id,
-        { $push: { tracks: track._id, Collections: colloction._id } }
+        { $push: { tracks: track._id, Collections: colloction._id } },
       );
       //remove song and colloction on cupdate error
       if (!userUpdateresult) {
@@ -193,7 +193,7 @@ class TrackController extends Controller {
       const savedTrack = song.save();
       if (!savedTrack || !savedUser)
         throw createHttpError.InternalServerError();
-      res.status(200).send();
+      res.status(200).send({ song });
     } catch (error) {
       next(error);
     }
@@ -210,7 +210,7 @@ class TrackController extends Controller {
         "..",
         "..",
         "..",
-        song.address
+        song.address,
       );
 
       const stat = fs.statSync(filePath);
@@ -245,8 +245,8 @@ class TrackController extends Controller {
         await Song.findByIdAndDelete(req.params.id);
         next(
           createHttpError.NotFound(
-            "Invalid song if you are the artist upload it again"
-          )
+            "Invalid song if you are the artist upload it again",
+          ),
         );
       } else next(error);
     }
@@ -301,12 +301,14 @@ class TrackController extends Controller {
 
   getTopTracks = async (req, res, next) => {
     try {
-      const top10Tracks = await Song.aggregate([
-        // { $match: { status: 'approved' } }, // Filter tracks by status, adjust as needed
-        { $sort: { stream: -1 } }, // Sort by stream in descending order
-        { $limit: 10 }, // Limit the results to the top 10 tracks
-      ]);
-      res.status(200).json({ status: 200, tracks: top10Tracks });
+      const top10Tracks = await Song.find()
+        .sort({ stream: -1 })
+        .limit(10);
+
+      res.status(200).json({
+        status: 200,
+        tracks: top10Tracks,
+      });
     } catch (error) {
       next(error);
     }

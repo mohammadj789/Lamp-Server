@@ -1,4 +1,5 @@
 const mongoose = require("mongoose");
+const { DomainFixer } = require("../utils/DomainFixer");
 const songSchema = new mongoose.Schema(
   {
     title: {
@@ -56,13 +57,15 @@ const songSchema = new mongoose.Schema(
       type: String,
     },
   },
-  { timestamps: true }
+  { timestamps: true },
 );
 songSchema.index({
   title: "text",
   // short_text: "text",
   // title: "text",
 });
+DomainFixer(songSchema, "image", "address");
+
 const Song = mongoose.model("Song", songSchema);
 
 module.exports = Song;

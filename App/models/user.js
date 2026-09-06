@@ -2,6 +2,7 @@ const mongoose = require("mongoose");
 const bcrypt = require("bcrypt");
 const jwt = require("jsonwebtoken");
 const createHttpError = require("http-errors");
+const { DomainFixer } = require("../utils/DomainFixer");
 
 const userSchema = new mongoose.Schema(
   {
@@ -87,7 +88,7 @@ const userSchema = new mongoose.Schema(
       default: [],
     },
   },
-  { timestamps: true }
+  { timestamps: true },
 );
 // userSchema.virtual("lyrics", {
 //   ref: "Lyric",
@@ -106,6 +107,7 @@ userSchema.pre("save", async function (next) {
   }
   next();
 });
+DomainFixer(userSchema, "image");
 
 userSchema.pre("save", function (next) {
   const user = this;
@@ -130,7 +132,7 @@ userSchema.methods.createAuthTocken = async function () {
   const token = jwt.sign(
     { _id: user._id.toString() },
     process.env.JTWTOKEN,
-    { expiresIn: "7d" }
+    { expiresIn: "7d" },
   );
   return token;
 };
@@ -142,7 +144,7 @@ userSchema.statics.checkForLogin = async function ({
   const user = await UserModel.findOne({ email });
   if (!user) {
     throw createHttpError.Unauthorized(
-      "username or password is wrong"
+      "username or password is wrong",
     );
   }
 
@@ -150,7 +152,7 @@ userSchema.statics.checkForLogin = async function ({
 
   if (!isMatch) {
     throw createHttpError.Unauthorized(
-      "username or password is wrong"
+      "username or password is wrong",
     );
   }
   return user;
