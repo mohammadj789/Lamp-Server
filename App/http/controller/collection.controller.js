@@ -15,6 +15,7 @@ const {
 } = require("../validation/track.validator");
 const mm = require("music-metadata");
 const Vibrant = require("node-vibrant");
+const { removeAOSObject } = require("../middleware/multer");
 class CollectionController extends Controller {
   updateThumbnail = async (req, res, next) => {
     try {
@@ -28,28 +29,15 @@ class CollectionController extends Controller {
       if (!file) {
         throw createHttpError.BadRequest("please upload a file");
       }
-      //generate path
 
-      const filePath = path.join(
-        req.filepathaddress?.[0]
-          ?.replace("static\\public", "")
-          .replace("static/public", ""),
-        req.file.filename,
-      );
+      // req.file.location is the public ArvanCloud URL set by uploadToAOS --
+      // no local path building needed anymore, and Vibrant can read the
+      // buffer directly instead of a disk file
+      const address = req.file.location;
 
-      const address = filePath.replace(/(\\)/gim, "/");
-      const diskLocation = path.join(
-        __dirname,
-        "..",
-        "..",
-        "..",
-        "static",
-        "public",
-        address,
-      );
-
-      const VibrantVar =
-        await Vibrant.from(diskLocation).getPalette();
+      const VibrantVar = await Vibrant.from(
+        req.file.buffer,
+      ).getPalette();
 
       //updtae colloction image
       const collection = await Collection.findOneAndUpdate(
@@ -91,7 +79,7 @@ class CollectionController extends Controller {
         collection,
       });
     } catch (error) {
-      req?.file?.path && removeErrorFile(req?.file?.path);
+      req?.file?.key && removeAOSObject(req.file.key);
       next(error);
     }
   };
@@ -225,9 +213,7 @@ class CollectionController extends Controller {
       }
 
       //generate path
-      const address = path
-        .join(req.filepathaddress[0], req.file.filename)
-        .replace(/(\\)/gim, "/");
+      const address = req.file.location;
 
       //validate features
       let features = undefined;
@@ -254,8 +240,9 @@ class CollectionController extends Controller {
         }
       }
 
-      const metadata = await mm.parseFile(
-        path.join(__dirname, "..", "..", "..", address),
+      const metadata = await mm.parseBuffer(
+        req.file.buffer,
+        req.file.mimetype,
       );
 
       const colloction = await Collection.findOne({
@@ -305,7 +292,7 @@ class CollectionController extends Controller {
         track,
       });
     } catch (error) {
-      req?.file?.path && removeErrorFile(req?.file?.path);
+      req?.file?.key && removeAOSObject(req.file.key);
       next(error);
     }
   };

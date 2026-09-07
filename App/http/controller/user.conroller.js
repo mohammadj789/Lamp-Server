@@ -7,6 +7,7 @@ const path = require("path");
 const { CheckIDValidator } = require("../validation/index.validator");
 const Song = require("../../models/song");
 const Collection = require("../../models/collection");
+const { removeAOSObject } = require("../middleware/multer");
 
 class UserController extends Controller {
   UpdateProfile = async (req, res, next) => {
@@ -20,14 +21,7 @@ class UserController extends Controller {
         throw createHttpError.BadRequest("please upload a file");
       }
       //generate path
-      const address = path
-        .join(
-          req.filepathaddress?.[0]
-            ?.replace("static\\public", "")
-            .replace("static/public", ""),
-          req.file.filename,
-        )
-        .replace(/(\\)/gim, "/");
+      const address = req.file.location;
 
       user.image = address;
       const updateResult = await user.save();
@@ -41,7 +35,7 @@ class UserController extends Controller {
         profile: address,
       });
     } catch (error) {
-      req?.file?.path && removeErrorFile(req?.file?.path);
+      req?.file?.key && removeAOSObject(req.file.key);
       next(error);
     }
   };

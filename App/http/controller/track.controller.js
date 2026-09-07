@@ -15,13 +15,13 @@ const {
   uploadTrackValidator,
 } = require("../validation/track.validator");
 const mm = require("music-metadata");
+const { removeAOSObject } = require("../middleware/multer");
 
 class TrackController extends Controller {
   uplaodTrack = async (req, res, next) => {
     try {
       const user = req.user;
 
-      //check rolles
       if (!["ARTIST", "ADMIN"].includes(user.role))
         throw createHttpError.Unauthorized(
           "you are not allowed to upload a song",
@@ -29,7 +29,7 @@ class TrackController extends Controller {
       if (user.role === "ADMIN" && !req.body.artist) {
         throw createHttpError.BadRequest("you shold set a artist");
       }
-      //determin artist
+
       const artist =
         user.role === "ADMIN"
           ? await UserModel.findOne({
@@ -39,20 +39,14 @@ class TrackController extends Controller {
           : req.user;
       if (!artist) throw createHttpError.NotFound("artist not found");
 
-      //validate body
       const file = req.file;
-
       await uploadTrackValidator.validateAsync(req.body);
-      if (!file) {
+      if (!file)
         throw createHttpError.BadRequest("please upload a file");
-      }
 
-      //generate path
-      const address = path
-        .join(req.filepathaddress[0], req.file.filename)
-        .replace(/(\\)/gim, "/");
+      // absolute R2 URL — no path.join needed, no local file involved
+      const address = req.file.location;
 
-      //validate features
       let features = undefined;
       if (req.body.features.length > 0) {
         if (req.body.features.includes(artist.id))
@@ -61,12 +55,7 @@ class TrackController extends Controller {
           );
 
         features = await UserModel.find(
-          {
-            _id: {
-              $in: req.body.features,
-            },
-            role: "ARTIST",
-          },
+          { _id: { $in: req.body.features }, role: "ARTIST" },
           { artist_name: "$name", artist_id: "$_id" },
         );
 
@@ -76,57 +65,55 @@ class TrackController extends Controller {
           );
         }
       }
-      const metadata = await mm.parseFile(
-        path.join(__dirname, "..", "..", "..", address),
+
+      // parse metadata directly from the in-memory buffer — no disk read
+      const metadata = await mm.parseBuffer(
+        req.file.buffer,
+        req.file.mimetype,
       );
 
       const track = await Song.create({
         title: req.body.title,
         genre: req.body.genre,
-        artist: {
-          artist_id: artist._id,
-          artist_name: artist.name,
-        },
+        artist: { artist_id: artist._id, artist_name: artist.name },
         album: req.body.title,
         duration: metadata.format.duration,
         features,
         address,
       });
       if (!track) throw createHttpError.InternalServerError();
-      //create colloction for track
+
       const colloction = await Collection.create({
         title: req.body.title,
-        owner: {
-          owner_id: artist._id,
-          owner_name: artist.name,
-        },
+        owner: { owner_id: artist._id, owner_name: artist.name },
         tracks: [track._id],
         type: "Single",
       });
-      //remove song on colloctionerror
       if (!colloction) {
         await Song.findByIdAndRemove(track._id);
         throw createHttpError.InternalServerError();
       }
-      //update user
+
       const userUpdateresult = await UserModel.findByIdAndUpdate(
         artist._id,
-        { $push: { tracks: track._id, Collections: colloction._id } },
+        {
+          $push: { tracks: track._id, Collections: colloction._id },
+        },
       );
-      //remove song and colloction on cupdate error
       if (!userUpdateresult) {
         await Song.findByIdAndRemove(track._id);
         await colloction.findByIdAndRemove(colloction._id);
         throw createHttpError.InternalServerError();
       }
-      //done
+
       return res.status(201).json({
         status: 201,
         message: "track uploaded successfully",
         track,
       });
     } catch (error) {
-      req?.file?.path && removeErrorFile(req?.file?.path);
+      // clean up the R2 object on failure instead of a local file
+      if (req?.file?.key) await removeAOSObject(req.file.key);
       next(error);
     }
   };

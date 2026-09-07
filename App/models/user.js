@@ -2,7 +2,6 @@ const mongoose = require("mongoose");
 const bcrypt = require("bcrypt");
 const jwt = require("jsonwebtoken");
 const createHttpError = require("http-errors");
-const { DomainFixer } = require("../utils/DomainFixer");
 
 const userSchema = new mongoose.Schema(
   {
@@ -107,7 +106,6 @@ userSchema.pre("save", async function (next) {
   }
   next();
 });
-DomainFixer(userSchema, "image");
 
 userSchema.pre("save", function (next) {
   const user = this;

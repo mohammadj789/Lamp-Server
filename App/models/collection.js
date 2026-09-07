@@ -1,5 +1,5 @@
 const mongoose = require("mongoose");
-const { DomainFixer } = require("../utils/DomainFixer");
+
 const collectionSchema = new mongoose.Schema(
   {
     title: {
@@ -36,7 +36,7 @@ const collectionSchema = new mongoose.Schema(
   },
   { timestamps: true },
 );
-DomainFixer(collectionSchema, "image");
+
 collectionSchema.index({
   title: "text",
   // short_text: "text",
