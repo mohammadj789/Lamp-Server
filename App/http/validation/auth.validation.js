@@ -7,7 +7,7 @@ const passwordObject = Joi.string()
   .min(8)
   .max(16)
   .error(
-    createHttpError.BadRequest("Password must be in range of 8-16")
+    createHttpError.BadRequest("Password must be in range of 8-16"),
   );
 const emailObject = Joi.string()
   .required()
@@ -21,8 +21,8 @@ const signupValidator = Joi.object({
     .min(3)
     .error(
       createHttpError.BadRequest(
-        "Name must be greater than 3 charecter"
-      )
+        "Name must be greater than 3 charecter",
+      ),
     ),
   password: passwordObject,
   email: emailObject,
@@ -32,8 +32,8 @@ const signupValidator = Joi.object({
     .min(5)
     .error(
       createHttpError.BadRequest(
-        "username must be greater than 3 charecter"
-      )
+        "username must be greater than 5 charecter",
+      ),
     ),
 });
 const loginValidator = Joi.object({
@@ -43,7 +43,7 @@ const loginValidator = Joi.object({
     .min(8)
     .max(16)
     .error(
-      createHttpError.BadRequest("Password must be in range of 8-16")
+      createHttpError.BadRequest("Password must be in range of 8-16"),
     ),
   email: emailObject,
 });
@@ -55,15 +55,15 @@ const resetPassValidator = Joi.object({
     .min(8)
     .max(16)
     .error(
-      createHttpError.BadRequest("newpass must be in range of 8-16")
+      createHttpError.BadRequest("newpass must be in range of 8-16"),
     ),
   repeatnewpass: Joi.string()
     .required()
     .valid(Joi.ref("newpass"))
     .error(
       createHttpError.BadRequest(
-        "enter the same password with new password field"
-      )
+        "enter the same password with new password field",
+      ),
     ),
 });
 module.exports = {
