@@ -27,8 +27,8 @@ class Application {
     this.#app.use(this.#express.urlencoded({ extended: true }));
     this.#app.use(
       this.#express.static(
-        path.join(__dirname, "..", "static", "public")
-      )
+        path.join(__dirname, "..", "static", "public"),
+      ),
     );
     this.#app.use(morgan("dev"));
     this.#app.use(
@@ -52,7 +52,7 @@ class Application {
               {
                 url:
                   process.env.NODE_ENV === "production"
-                    ? "https://lamp-server.iran.liara.run"
+                    ? "https://lamp-server.onrender.com"
                     : `http://localhost:${this.#PORT}`,
               },
             ],
@@ -74,15 +74,15 @@ class Application {
           },
           apis: ["./App/routers/docs/*.yml"],
         }),
-        { explorer: true }
-      )
+        { explorer: true },
+      ),
     );
   }
   configDB(DB_URL) {
     const { default: mongoose } = require("mongoose");
     mongoose.connect(DB_URL);
     mongoose.connection.on("connected", () =>
-      console.log("Connection to database is established")
+      console.log("Connection to database is established"),
     );
     mongoose.connection.on("error", (err) => {
       console.error(err);
@@ -112,8 +112,8 @@ class Application {
       console.log(
         `Server is running on port ${this.#PORT}. http://localhost:${
           this.#PORT
-        }/api-doc`
-      )
+        }/api-doc`,
+      ),
     );
   }
   configRoutes() {
