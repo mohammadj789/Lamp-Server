@@ -85,7 +85,7 @@ class TrackController extends Controller {
 
       const colloction = await Collection.create({
         title: req.body.title,
-        owner: { owner_id: artist._id },
+        owner: artist._id,
         tracks: [track._id],
         type: "Single",
       });

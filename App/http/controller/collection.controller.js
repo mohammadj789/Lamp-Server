@@ -41,7 +41,7 @@ class CollectionController extends Controller {
 
       //updtae colloction image
       const collection = await Collection.findOneAndUpdate(
-        { _id: id, "owner.owner_id": user._id },
+        { _id: id, owner: user._id },
         {
           $set: {
             image: address,
@@ -93,7 +93,7 @@ class CollectionController extends Controller {
       //updtae colloction image
       const collection = await Collection.findOneAndDelete({
         _id: id,
-        "owner.owner_id": user._id,
+        owner: user._id,
       });
 
       if (!collection) throw createHttpError.NotFound();
@@ -161,9 +161,8 @@ class CollectionController extends Controller {
       if (!artist) throw createHttpError.NotFound("artist not found");
       const colloction = await Collection.create({
         title: req.body.title,
-        owner: {
-          owner_id: artist._id,
-        },
+        owner: artist._id,
+
         type: req.params.type,
       });
       if (!colloction) {
@@ -313,7 +312,7 @@ class CollectionController extends Controller {
       const playlist = await Collection.findOne({
         _id: req.body.playlistID,
         type: "playlist",
-        "owner.owner_id": user._id,
+        owner: user._id,
       });
 
       if (!playlist) {
@@ -347,7 +346,7 @@ class CollectionController extends Controller {
       const playlist = await Collection.findOne({
         _id: req.body.playlistID,
         type: "playlist",
-        "owner.owner_id": user._id,
+        owner: user._id,
       });
 
       if (!playlist) {
@@ -450,7 +449,7 @@ class CollectionController extends Controller {
           select: "-address -status",
         })
         .populate({
-          path: "owner.owner_id",
+          path: "owner",
           select: "name image",
         });
 

@@ -12,10 +12,8 @@ const collectionSchema = new mongoose.Schema(
     streams: { default: 0, type: Number },
     image: { type: String },
     owner: {
-      owner_id: {
-        type: mongoose.Schema.Types.ObjectId,
-        ref: "User",
-      },
+      type: mongoose.Schema.Types.ObjectId,
+      ref: "User",
     },
     tracks: [
       {
