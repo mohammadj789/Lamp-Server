@@ -141,6 +141,8 @@ class CollectionController extends Controller {
       await createCollectionValidator.validateAsync(req.body);
 
       //check rolles
+      const admin_for_artist =
+        user.role === "ADMIN" && req.params.type === "album";
       if (
         !["ARTIST", "ADMIN"].includes(user.role) &&
         req.params.type === "album"
@@ -148,28 +150,27 @@ class CollectionController extends Controller {
         throw createHttpError.BadRequest(
           "you are not allowed to create a album",
         );
-      if (user.role === "ADMIN" && !req.body.artist) {
+      if (admin_for_artist && !req.body.artist) {
         throw createHttpError.BadRequest("you shold set a artist");
       }
       //determin artist
-      const artist =
-        user.role === "ADMIN"
-          ? await UserModel.findOne({
-              _id: req.body.artist,
-            })
-          : req.user;
-      if (!artist) throw createHttpError.NotFound("artist not found");
+      const owner = admin_for_artist
+        ? await UserModel.findOne({
+            _id: req.body.artist,
+          })
+        : req.user;
+      if (!owner) throw createHttpError.NotFound("artist not found");
       const colloction = await Collection.create({
         title: req.body.title,
-        owner: artist._id,
+        owner: owner._id,
 
         type: req.params.type,
       });
       if (!colloction) {
         throw createHttpError.InternalServerError();
       }
-      artist.Collections.push(colloction._id);
-      const userUpdate = artist.save();
+      owner.Collections.push(colloction._id);
+      const userUpdate = owner.save();
       if (!userUpdate) {
         await Collection.findByIdAndRemove(colloction._id);
         throw createHttpError.InternalServerError();
