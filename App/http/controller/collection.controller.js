@@ -450,7 +450,7 @@ class CollectionController extends Controller {
           select: "-address -status",
         })
         .populate({
-          path: "tracks owner.owner_id",
+          path: "owner.owner_id",
           select: "name image",
         });
 
