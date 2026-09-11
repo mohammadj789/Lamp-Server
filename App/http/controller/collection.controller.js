@@ -163,7 +163,6 @@ class CollectionController extends Controller {
         title: req.body.title,
         owner: {
           owner_id: artist._id,
-          owner_name: artist.name,
         },
         type: req.params.type,
       });
@@ -445,10 +444,15 @@ class CollectionController extends Controller {
 
       const PopulatedCollection = await Collection.findById(
         req.params.collectionID,
-      ).populate({
-        path: "tracks",
-        select: "-address -status", // Add the fields you want to select
-      });
+      )
+        .populate({
+          path: "tracks",
+          select: "-address -status",
+        })
+        .populate({
+          path: "tracks owner.owner_id",
+          select: "name image",
+        });
 
       if (!PopulatedCollection) throw createHttpError.NotFound();
       return res.status(200).json({

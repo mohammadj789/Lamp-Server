@@ -16,12 +16,6 @@ const collectionSchema = new mongoose.Schema(
         type: mongoose.Schema.Types.ObjectId,
         ref: "User",
       },
-      owner_name: {
-        type: String,
-        required: true,
-        trim: true,
-        lowercase: true,
-      },
     },
     tracks: [
       {
