@@ -10,7 +10,10 @@ const collectionSchema = new mongoose.Schema(
     },
     likes: { default: 0, type: Number },
     streams: { default: 0, type: Number },
-    image: { type: String },
+    image: {
+      type: String,
+      default: "https://lampcdn.ruzo.ir/public/static/playlist.png",
+    },
     owner: {
       type: mongoose.Schema.Types.ObjectId,
       ref: "User",

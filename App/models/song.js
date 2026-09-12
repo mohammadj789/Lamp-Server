@@ -48,7 +48,10 @@ const songSchema = new mongoose.Schema(
       ref: "Lyric",
     },
 
-    image: { type: String },
+    image: {
+      type: String,
+      default: "https://lampcdn.ruzo.ir/public/static/playlist.png",
+    },
     status: { type: String, default: "pending" },
     stream: { type: Number, default: 0 },
     theme_color: { type: String },

@@ -31,7 +31,10 @@ const userSchema = new mongoose.Schema(
       trim: true,
       lowercase: true,
     },
-    image: { type: String },
+    image: {
+      type: String,
+      default: "https://lampcdn.ruzo.ir/public/static/profile.png",
+    },
     favorit_songs: {
       type: [mongoose.Schema.Types.ObjectId],
       ref: "Song",
