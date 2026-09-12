@@ -451,7 +451,7 @@ class CollectionController extends Controller {
         })
         .populate({
           path: "owner",
-          select: "name image",
+          select: "name image role",
         });
 
       if (!PopulatedCollection) throw createHttpError.NotFound();
