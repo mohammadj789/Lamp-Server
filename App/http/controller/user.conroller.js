@@ -7,7 +7,7 @@ const path = require("path");
 const { CheckIDValidator } = require("../validation/index.validator");
 const Song = require("../../models/song");
 const Collection = require("../../models/collection");
-const { removeAOSObject } = require("../middleware/multer");
+const { removeR2Object } = require("../middleware/multer");
 
 class UserController extends Controller {
   UpdateProfile = async (req, res, next) => {
@@ -35,7 +35,7 @@ class UserController extends Controller {
         profile: address,
       });
     } catch (error) {
-      req?.file?.key && removeAOSObject(req.file.key);
+      req?.file?.key && removeR2Object(req.file.key);
       next(error);
     }
   };

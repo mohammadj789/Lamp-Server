@@ -15,7 +15,7 @@ const {
   uploadTrackValidator,
 } = require("../validation/track.validator");
 const mm = require("music-metadata");
-const { removeAOSObject } = require("../middleware/multer");
+const { removeR2Object } = require("../middleware/multer");
 
 class TrackController extends Controller {
   uplaodTrack = async (req, res, next) => {
@@ -137,7 +137,7 @@ class TrackController extends Controller {
       });
     } catch (error) {
       // clean up the R2 object on failure instead of a local file
-      if (req?.file?.key) await removeAOSObject(req.file.key);
+      if (req?.file?.key) await removeR2Object(req.file.key);
       next(error);
     }
   };

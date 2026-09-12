@@ -15,7 +15,7 @@ const {
 } = require("../validation/track.validator");
 const mm = require("music-metadata");
 const Vibrant = require("node-vibrant");
-const { removeAOSObject } = require("../middleware/multer");
+const { removeR2Object } = require("../middleware/multer");
 class CollectionController extends Controller {
   updateThumbnail = async (req, res, next) => {
     try {
@@ -79,7 +79,7 @@ class CollectionController extends Controller {
         collection,
       });
     } catch (error) {
-      req?.file?.key && removeAOSObject(req.file.key);
+      req?.file?.key && removeR2Object(req.file.key);
       next(error);
     }
   };
@@ -320,7 +320,7 @@ class CollectionController extends Controller {
         track,
       });
     } catch (error) {
-      req?.file?.key && removeAOSObject(req.file.key);
+      req?.file?.key && removeR2Object(req.file.key);
       next(error);
     }
   };
