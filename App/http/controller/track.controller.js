@@ -106,6 +106,30 @@ class TrackController extends Controller {
         throw createHttpError.InternalServerError();
       }
 
+      //update featured artists too
+      if (features && features.length > 0) {
+        const featuresUpdateResult = await UserModel.updateMany(
+          { _id: { $in: features.map((f) => f.artist_id) } },
+          { $push: { tracks: track._id } },
+        );
+        //rollback everything if featured artists couldn't be updated
+        if (
+          !featuresUpdateResult ||
+          featuresUpdateResult.modifiedCount !== features.length
+        ) {
+          await Song.findByIdAndRemove(track._id);
+          await colloction.findByIdAndRemove(colloction._id);
+          await UserModel.findByIdAndUpdate(artist._id, {
+            $pull: { tracks: track._id, Collections: colloction._id },
+          });
+          await UserModel.updateMany(
+            { _id: { $in: features.map((f) => f.artist_id) } },
+            { $pull: { tracks: track._id } },
+          );
+          throw createHttpError.InternalServerError();
+        }
+      }
+
       return res.status(201).json({
         status: 201,
         message: "track uploaded successfully",
