@@ -102,7 +102,7 @@ class TrackController extends Controller {
       );
       if (!userUpdateresult) {
         await Song.findByIdAndRemove(track._id);
-        await colloction.findByIdAndRemove(colloction._id);
+        await Collection.findByIdAndRemove(colloction._id);
         throw createHttpError.InternalServerError();
       }
 
@@ -118,7 +118,7 @@ class TrackController extends Controller {
           featuresUpdateResult.modifiedCount !== features.length
         ) {
           await Song.findByIdAndRemove(track._id);
-          await colloction.findByIdAndRemove(colloction._id);
+          await Collection.findByIdAndRemove(colloction._id);
           await UserModel.findByIdAndUpdate(artist._id, {
             $pull: { tracks: track._id, Collections: colloction._id },
           });
