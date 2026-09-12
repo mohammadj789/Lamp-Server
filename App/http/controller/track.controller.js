@@ -56,7 +56,7 @@ class TrackController extends Controller {
 
         features = await UserModel.find(
           { _id: { $in: req.body.features }, role: "ARTIST" },
-          { artist_name: "$name", artist_id: "$_id" },
+          { name: 1 },
         );
 
         if (features.length !== req.body.features.length) {
@@ -64,6 +64,11 @@ class TrackController extends Controller {
             "one of features that you've entered is invalid",
           );
         }
+
+        features = features.map((f) => ({
+          artist_id: f._id,
+          artist_name: f.name,
+        }));
       }
 
       // parse metadata directly from the in-memory buffer — no disk read
