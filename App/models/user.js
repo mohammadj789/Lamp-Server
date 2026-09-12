@@ -113,7 +113,7 @@ userSchema.pre("save", async function (next) {
 userSchema.pre("save", function (next) {
   const user = this;
   const maxItems = 200;
-  if (user.isModified("password") && user.streams.length > maxItems) {
+  if (user.isModified("streams") && user.streams.length > maxItems) {
     user.streams = user.streams.slice(-maxItems);
   }
   next();
